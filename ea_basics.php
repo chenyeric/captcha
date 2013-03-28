@@ -460,7 +460,7 @@ Class Population{
 		
 			$charnbmin = $indiv->getGene(5);         // min number of characters
 			$charnbmax = $indiv->getGene(5);         // max num of chars
-/*
+
 			$charspace = $indiv->getGene(6);        // Space between characters (in pixels)
 			$charsizemin = $indiv->getGene(7);      // Minimum size characters
 			$charsizemax = $indiv->getGene(8);      // Maximum size of characters
@@ -500,7 +500,7 @@ Class Population{
 			                       // Does not work on older configurations PHP / GD
 
 			$noiseup = true;      // noise is it above the write (true) or below (false)
-*/
+
 
 			$image_name = "./captcha/".(string) $key.".png";
 			generate_captcha($image_name);
