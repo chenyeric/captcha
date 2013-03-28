@@ -1,0 +1,9 @@
+Configuration pour Cryptographp v1.4
+www.cryptographp.com
+
+
+Comment installer cette configuration:
+--------------------------------------
+
+
+- Remplacer le fichier "cryptographp.cfg.php" par celui fourni dans ce package

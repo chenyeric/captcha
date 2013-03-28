@@ -1,4 +1,5 @@
 <?php
+include("ea_core.php");
 
 class Gac{
 
@@ -7,7 +8,6 @@ class Gac{
 	const MUTATION_SIZE = 100;
 	const SURVIVORS = 10;
 	const SUCCESS_RATE = 1;
-	const LETTERS = "abcdefghijklmnopqrstuvwxyz ";
 	const OFFSPRING = 2;
 	
 	public function Gac($text)

@@ -7,7 +7,7 @@
 // www.cryptographp.com 
 // cryptographp@alphpa.com 
 //
-// Licence CeCILL modifiée
+// Licence CeCILL modifiÃ©e
 // => Voir fichier Licence_CeCILL_V2-fr.txt)
 // -----------------------------------------------
 
@@ -16,149 +16,121 @@
 // Configuration du fond du cryptogramme
 // -------------------------------------
 
-$cryptwidth  = 170;  // Largeur du cryptogramme (en pixels)
-$cryptheight = 50;   // Hauteur du cryptogramme (en pixels)
+$cryptwidth  = 140;  // â€‹â€‹Width of the cryptogram (in pixels)
+$cryptheight = 40;   // Height of the cryptogram (in pixels)
 
-$bgR  = 255;         // Couleur du fond au format RGB: Red (0->255)
+$bgR  = 255;         // background color to RGB: Red (0 -> 255)
 $bgG  = 255;         // Couleur du fond au format RGB: Green (0->255)
 $bgB  = 255;         // Couleur du fond au format RGB: Blue (0->255)
 
-$bgclear = true;     // Fond transparent (true/false)
-                     // Uniquement valable pour le format PNG
+$bgclear = true;     // Transparent background (true / false)
+                     // Only valid for PNG
 
-$bgimg = 'sky.png';                 // Le fond du cryptogramme peut-être une image  
-                             // PNG, GIF ou JPG. Indiquer le fichier image
-                             // Exemple: $fondimage = 'photo.gif';
-				                     // L'image sera redimensionnée si nécessaire
-                             // pour tenir dans le cryptogramme.
-                             // Si vous indiquez un répertoire plutôt qu'un 
-                             // fichier l'image sera prise au hasard parmi 
-                             // celles disponibles dans le répertoire
+$bgimg = '';                					// The bottom of the cryptogram may be an image
 
-$bgframe = false;    // Ajoute un cadre de l'image (true/false)
+$bgframe = false;    // Add a picture frame (true / false)
 
 
 // ----------------------------
-// Configuration des caractères
+// Set the character
 // ----------------------------
 
-// Couleur de base des caractères
+// Color basic character
 
-$charR = 0;     // Couleur des caractères au format RGB: Red (0->255)
-$charG = 0;     // Couleur des caractères au format RGB: Green (0->255)
-$charB = 0;     // Couleur des caractères au format RGB: Blue (0->255)
+$charR = 0;     // Font color in RGB: Red (0 -> 255)
+$charG = 0;     // Couleur des caractÃ¨res au format RGB: Green (0->255)
+$charB = 255;     // Couleur des caractÃ¨res au format RGB: Blue (0->255)
 
-$charcolorrnd = false;      // Choix aléatoire de la couleur.
-$charcolorrndlevel = 2;    // Niveau de clarté des caractères si choix aléatoire (0->4)
-                           // 0: Aucune sélection
-                           // 1: Couleurs très sombres (surtout pour les fonds clairs)
-                           // 2: Couleurs sombres
-                           // 3: Couleurs claires
-                           // 4: Couleurs très claires (surtout pour fonds sombres)
+$charcolorrnd = false;      // Random choice of color.
+$charcolorrndlevel = 2;    
 
-$charclear = 100;   // Intensité de la transparence des caractères (0->127)
-                  // 0=opaques; 127=invisibles
-	                // interessant si vous utilisez une image $bgimg
-	                // Uniquement si PHP >=3.2.1
+$charclear = 0;  // Intensity of transparency characters (0 -> 127)
+															// 0 = opaque, 127 = invisible
+							// Interesting if you use an image $ bgimg
+							// Only if PHP> = 3.2.1
+// Fonts
 
-// Polices de caractères
-
-//$tfont[] = 'Alanden_.ttf';       // Les polices seront aléatoirement utilisées.
-//$tfont[] = 'bsurp___.ttf';       // Vous devez copier les fichiers correspondants
-//$tfont[] = 'ELECHA__.TTF';       // sur le serveur.
-//$tfont[] = 'luggerbu.ttf';       // Ajoutez autant de lignes que vous voulez   
-//$tfont[] = 'RASCAL__.TTF';       // Respectez la casse ! 
-$tfont[] = 'SCRAWL.TTF';  
+//$tfont[] = 'Alanden_.ttf';       // The fonts will be used randomly.
+//$tfont[] = 'bsurp___.ttf';       // You must copy the corresponding files
+//$tfont[] = 'ELECHA__.TTF';       //  on the server.
+$tfont[] = 'luggerbu.ttf';         // Add as many rows as you want  
+//$tfont[] = 'RASCAL__.TTF';       // case-sensitive!
+//$tfont[] = 'SCRAWL.TTF';  
 //$tfont[] = 'WAVY.TTF';   
 
 
-// Caracteres autorisés
-// Attention, certaines polices ne distinguent pas (ou difficilement) les majuscules 
-// et les minuscules. Certains caractères sont faciles à confondre, il est donc
-// conseillé de bien choisir les caractères utilisés.
+// Allowed Caracteres
+// Note that some fonts do not distinguish (or difficult) the upper
+// Sensitive. Some characters are easy to confuse, it is
+// Recommended to choose the characters used.
 
-$charel = 'ABCDEFGHKLMNPRTWXYZ234569';       // Caractères autorisés
+$charel = 'ABCDEFGHKLMNPRTWXYZ234569';       // CaractÃ¨res autorisÃ©s
 
-$crypteasy = false;       // Création de cryptogrammes "faciles à lire" (true/false)
-                         // composés alternativement de consonnes et de voyelles.
+$crypteasy = true;       // Create cryptograms "easy to read" (true / false). Alternatively compounds consonants and vowels.
 
-$charelc = 'BCDFGHKLMNPRTVWXZ';   // Consonnes utilisées si $crypteasy = true
-$charelv = 'AEIOUY';              // Voyelles utilisées si $crypteasy = true
+$charelc = 'BCDFGHKLMNPRTVWXZ';   // consonants to use when $crypteasy = true
+$charelv = 'AEIOUY';              // Vowels to use when $crypteasy = true
 
-$difuplow = false;          // Différencie les Maj/Min lors de la saisie du code (true, false)
+$difuplow = false;          // Differentiates Maj / Min when entering the code (true, false)
 
-$charnbmin = 5;         // Nb minimum de caracteres dans le cryptogramme
-$charnbmax = 5;         // Nb maximum de caracteres dans le cryptogramme
+$charnbmin = 5;         // min number of characters
+$charnbmax = 5;         // max num of chars
 
-$charspace = 25;        // Espace entre les caracteres (en pixels)
-$charsizemin = 25;      // Taille minimum des caractères
-$charsizemax = 25;      // Taille maximum des caractères
+$charspace = 22;        // Space between characters (in pixels)
+$charsizemin = 16;      // Minimum size characters
+$charsizemax = 18;      // Maximum size of characters
 
-$charanglemax  = 25;     // Angle maximum de rotation des caracteres (0-360)
-$charup   = false;        // Déplacement vertical aléatoire des caractères (true/false)
+$charanglemax  = 10;     // Maximum angle of rotation of the characters (0-360)
+$charup   = true;        // Vertical displacement random characters (true / false)
 
-// Effets supplémentaires
+// Special Effects
 
-$cryptgaussianblur = false; // Transforme l'image finale en brouillant: méthode Gauss (true/false)
-                            // uniquement si PHP >= 5.0.0
-$cryptgrayscal = false;     // Transforme l'image finale en dégradé de gris (true/false)
-                            // uniquement si PHP >= 5.0.0
+$cryptgaussianblur = false; // Transform the final image blurring: Gauss (true / false)
+$cryptgrayscal = false;     // Transform the final image in grayscale (true / false)
 
 // ----------------------
 // Configuration du bruit
 // ----------------------
 
-$noisepxmin = 0;      // Bruit: Nb minimum de pixels aléatoires
-$noisepxmax = 0;      // Bruit: Nb maximum de pixels aléatoires
+$noisepxmin = 500;      // Noise: Minimum Number of random pixels
+$noisepxmax = 1000;      // Noise: Maximum Number of random pixels
 
-$noiselinemin = 0;     // Bruit: Nb minimum de lignes aléatoires
-$noiselinemax = 0;     // Bruit: Nb maximum de lignes aléatoires
+$noiselinemin = 5;     // Noise: minimum Number of random rows
+$noiselinemax = 10;     // Noise: Maximum Number of random lines
 
-$nbcirclemin = 0;      // Bruit: Nb minimum de cercles aléatoires 
-$nbcirclemax = 0;      // Bruit: Nb maximim de cercles aléatoires
+$nbcirclemin = 0;      // Noise: Nb minimum random circles 
+$nbcirclemax = 0;      // Noise: Number max of random circles
 
-$noisecolorchar  = 2;  // Bruit: Couleur d'ecriture des pixels, lignes, cercles: 
-                       // 1: Couleur d'écriture des caractères
-                       // 2: Couleur du fond
-                       // 3: Couleur aléatoire
-                       
-$brushsize = 1;        // Taille d'ecriture du princeaiu (en pixels) 
-                       // de 1 à 25 (les valeurs plus importantes peuvent provoquer un 
-                       // Internal Server Error sur certaines versions de PHP/GD)
-                       // Ne fonctionne pas sur les anciennes configurations PHP/GD
+$noisecolorchar  = 1; // Noise: writing pixel color, lines, circles: 1: color of font 2: Background Color 3: Random color
+$brushsize = 1;        // Font size of princeaiu (in pixels) 
+						// 1 to 25 (the higher values â€‹â€‹may cause 
+						// Internal Server Error on some versions of PHP / GD) 
+						// Does not work on older configurations PHP / GD
 
-$noiseup = false;      // Le bruit est-il par dessus l'ecriture (true) ou en dessous (false) 
+$noiseup = true;      // noise is it above the write (true) or below (false)
 
 // --------------------------------
-// Configuration système & sécurité
+// System & Security
 // --------------------------------
 
-$cryptformat = "png";   // Format du fichier image généré "GIF", "PNG" ou "JPG"
-				                // Si vous souhaitez un fond transparent, utilisez "PNG" (et non "GIF")
-				                // Attention certaines versions de la bibliotheque GD ne gerent pas GIF !!!
 
-$cryptsecure = "md5";    // Méthode de crytpage utilisée: "md5", "sha1" ou "" (aucune)
-                         // "sha1" seulement si PHP>=4.2.0
-                         // Si aucune méthode n'est indiquée, le code du cyptogramme est stocké 
-                         // en clair dans la session.
-                       
-$cryptusetimer = 0;        // Temps (en seconde) avant d'avoir le droit de regénérer un cryptogramme
+$cryptformat = "png";    // Image file format generated "GIF", "PNG" or "JPG"
+					// If you want a transparent background, use "PNG" (not "GIF")
+					// Note some versions of the GD library does not gerent GIF!
 
-$cryptusertimererror = 3;  // Action à réaliser si le temps minimum n'est pas respecté:
-                           // 1: Ne rien faire, ne pas renvoyer d'image.
-                           // 2: L'image renvoyée est "images/erreur2.png" (vous pouvez la modifier)
-                           // 3: Le script se met en pause le temps correspondant (attention au timeout
-                           //    par défaut qui coupe les scripts PHP au bout de 30 secondes)
-                           //    voir la variable "max_execution_time" de votre configuration PHP
+$cryptsecure = "md5";    					// Method used crytpage "md5", "sha1" or "" (none) 
+					// "Sha1" only if PHP> = 4.2.0
+					// If no method is specified, the code is stored cyptogramme 
+					// To clear the session.
+$cryptusetimer = 0;        // Time (in seconds) before being allowed to regenerate a cryptogram
 
-$cryptusemax = 1000;  // Nb maximum de fois que l'utilisateur peut générer le cryptogramme
-                      // Si dépassement, l'image renvoyée est "images/erreur1.png"
-                      // PS: Par défaut, la durée d'une session PHP est de 180 mn, sauf si 
-                      // l'hebergeur ou le développeur du site en ont décidé autrement... 
-                      // Cette limite est effective pour toute la durée de la session. 
+$cryptusertimererror = 3;  
+
+$cryptusemax = 1000;  // Nb maximum time the user may generate the cryptogram
+
                       
-$cryptoneuse = false;  // Si vous souhaitez que la page de verification ne valide qu'une seule 
-                       // fois la saisie en cas de rechargement de la page indiquer "true".
-                       // Sinon, le rechargement de la page confirmera toujours la saisie.                          
+$cryptoneuse = false;  // If you want the page verification is valid only
+Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â Â // When the input when reloading the page indicate "true".
+// Otherwise, reloading the page will always confirm the entry.                          
                       
 ?>
