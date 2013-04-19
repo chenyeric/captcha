@@ -23,7 +23,7 @@ $bgR  = 255;         // background color to RGB: Red (0 -> 255)
 $bgG  = 255;         // Couleur du fond au format RGB: Green (0->255)
 $bgB  = 255;         // Couleur du fond au format RGB: Blue (0->255)
 
-$bgclear = true;     // Transparent background (true / false)
+$bgclear = false;     // Transparent background (true / false)
                      // Only valid for PNG
 
 $bgimg = '';                					// The bottom of the cryptogram may be an image
@@ -71,7 +71,7 @@ $crypteasy = true;       // Create cryptograms "easy to read" (true / false). Al
 $charelc = 'BCDFGHKLMNPRTVWXZ';   // consonants to use when $crypteasy = true
 $charelv = 'AEIOUY';              // Vowels to use when $crypteasy = true
 
-$difuplow = false;          // Differentiates Maj / Min when entering the code (true, false)
+$difuplow = true;          // Differentiates Maj / Min when entering the code (true, false)
 
 $charnbmin = 5;         // min number of characters
 $charnbmax = 5;         // max num of chars
@@ -101,20 +101,20 @@ $noiselinemax = 10;     // Noise: Maximum Number of random lines
 $nbcirclemin = 0;      // Noise: Nb minimum random circles 
 $nbcirclemax = 0;      // Noise: Number max of random circles
 
-$noisecolorchar  = 1; // Noise: writing pixel color, lines, circles: 1: color of font 2: Background Color 3: Random color
+$noisecolorchar  = 2; // Noise: writing pixel color, lines, circles: 1: color of font 2: Background Color 3: Random color
 $brushsize = 1;        // Font size of princeaiu (in pixels) 
 						// 1 to 25 (the higher values ​​may cause 
 						// Internal Server Error on some versions of PHP / GD) 
 						// Does not work on older configurations PHP / GD
 
-$noiseup = true;      // noise is it above the write (true) or below (false)
+$noiseup = false;      // noise is it above the write (true) or below (false)
 
 // --------------------------------
 // System & Security
 // --------------------------------
 
 
-$cryptformat = "png";    // Image file format generated "GIF", "PNG" or "JPG"
+$cryptformat = "JPG";    // Image file format generated "GIF", "PNG" or "JPG"
 					// If you want a transparent background, use "PNG" (not "GIF")
 					// Note some versions of the GD library does not gerent GIF!
 
@@ -131,6 +131,5 @@ $cryptusemax = 1000;  // Nb maximum time the user may generate the cryptogram
                       
 $cryptoneuse = false;  // If you want the page verification is valid only
                        // When the input when reloading the page indicate "true".
-// Otherwise, reloading the page will always confirm the entry.                          
-                      
+					// Otherwise, reloading the page will always confirm the entry.   
 ?>

@@ -13,6 +13,7 @@ function generate_captcha($img_name){
 	$black   = imagecolorallocate($imgtmp,0,0,0);
 	imagefill($imgtmp,0,0,$blank);
 
+//echo("charset is: $charel<br>");
 
 	$word ='';
 	$x = 10; 
@@ -119,7 +120,7 @@ function generate_captcha($img_name){
 	$word = ($difuplow?$word:strtoupper($word));
 
 
-	// Send the final image to the browser
+	// Saves the final image
 	switch (strtoupper($cryptformat)) {  
 	       case "JPG"  :
 		     case "JPEG" : if (imagetypes() & IMG_JPG)  {
@@ -137,42 +138,45 @@ function generate_captcha($img_name){
 	       }
 
 	imagedestroy ($img);
-	unset ($word,$tword);
+	unset ($tword);
+	
+	return $word;
 }
 
 function ecriture()
 {
-// creation of writing
-global  $img, $ink, $charR, $charG, $charB, $charclear, $xvariation, $charnb, $charcolorrnd, $charcolorrndlevel, $tword, $charspace;
-if (function_exists ('imagecolorallocatealpha')) $ink = imagecolorallocatealpha($img,$charR,$charG,$charB,$charclear);
-   else $ink = imagecolorallocate ($img,$charR,$charG,$charB);
+	// creation of writing
+	global  $img, $ink, $charR, $charG, $charB, $charclear, $xvariation, $charnb, $charcolorrnd, $charcolorrndlevel, $tword, $charspace;
+	if (function_exists ('imagecolorallocatealpha')) $ink = imagecolorallocatealpha($img,$charR,$charG,$charB,$charclear);
+	   else $ink = imagecolorallocate ($img,$charR,$charG,$charB);
 
-$x = $xvariation;
-for ($i=1;$i<=$charnb;$i++) {       
+	$x = $xvariation;
+	for ($i=1;$i<=$charnb;$i++) {       
    
-    if ($charcolorrnd){   // Randomly chooses colors
-       $ok = false;
-       do {
-          $rndR = rand(0,255); $rndG = rand(0,255); $rndB = rand(0,255);
-          $rndcolor = $rndR+$rndG+$rndB;
-          switch ($charcolorrndlevel) {
-                 case 1  : if ($rndcolor<200) $ok=true; break; // very dark
-                 case 2  : if ($rndcolor<400) $ok=true; break; // dark
-                 case 3  : if ($rndcolor>500) $ok=true; break; // light
-                 case 4  : if ($rndcolor>650) $ok=true; break; // very light
-                 default : $ok=true;               
-                 }
-          } while (!$ok);
-      
-      if (function_exists ('imagecolorallocatealpha')) $rndink = imagecolorallocatealpha($img,$rndR,$rndG,$rndB,$charclear);
-          else $rndink = imagecolorallocate ($img,$rndR,$rndG,$rndB);          
-         }  
-     
-    $lafont="fonts/".$tword[$i]['font'];
-    imagettftext($img,$tword[$i]['size'],$tword[$i]['angle'],$x,$tword[$i]['y'],$charcolorrnd?$rndink:$ink,$lafont,$tword[$i]['element']);
 
-    $x +=$charspace;
-    } 
+	    if ($charcolorrnd){   // Randomly chooses colors
+	       $ok = false;
+	       do {
+	          $rndR = rand(0,255); $rndG = rand(0,255); $rndB = rand(0,255);
+	          $rndcolor = $rndR+$rndG+$rndB;
+	          switch ($charcolorrndlevel){
+	                 case 1  : if ($rndcolor<200) $ok=true; break; // very dark
+	                 case 2  : if ($rndcolor<400) $ok=true; break; // dark
+	                 case 3  : if ($rndcolor>500) $ok=true; break; // light
+	                 case 4  : if ($rndcolor>650) $ok=true; break; // very light
+	                 default : $ok=true;               
+	          }
+	        } while (!$ok);
+      
+	      	if (function_exists ('imagecolorallocatealpha')) $rndink = imagecolorallocatealpha($img,$rndR,$rndG,$rndB,$charclear);
+	      	else $rndink = imagecolorallocate ($img,$rndR,$rndG,$rndB);          
+	    }  
+     
+	    $lafont="fonts/".$tword[$i]['font'];
+	    imagettftext($img,$tword[$i]['size'],$tword[$i]['angle'],$x,$tword[$i]['y'],$charcolorrnd?$rndink:$ink,$lafont,$tword[$i]['element']);
+
+	    $x +=$charspace;
+	} 
 }
 
 function noisecolor()

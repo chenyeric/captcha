@@ -1,12 +1,18 @@
 <?php
 error_reporting(E_ALL);
-include("ea_basics.php");
+include("ea_core.php");
 
+//public function init($rate, $layer_num, $equil_size, $mut_rate, $cross_rate, $dying_rate)
+$ea = new EA_Core();
+$ea->init(10,10,3,0.8,0.8,1);
+$ea->run();
+
+/*
 $pop = new Population();
 $pop->init(20,0.1,0.1, 1, "layer_test");
-$pop->populate();
+$pop->evolve();
 $pop->generate_image();
-/*
+
 $pop_1 = new Population();
 $pop_1->fill("layer_test");
 $pop_1->dump();

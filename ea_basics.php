@@ -25,29 +25,46 @@ Class Individual{
 		0,		//12- grayscale 
 		0,		//13- Number of random pixels
 		0,		//14- Number of random lines
-		0		//15- Number of random circles
+		0,		//15- Number of random circles
+		0, 		//16- bg r
+		0, 		//17- bg g
+		0, 		//18- bg b
+		0, 		//19- font r
+		0,		//20- font g
+		0,		//21- font b
+		0		//22- color difference 0-2
 	);
 	
 	//the possible range values for our genotypes
 	private $geno_range = Array(
-		Array(80,160),		//width
-		Array(30,60),		//height
-		Array(0,125),		// Intensity of transparency characters (0 -> 127) // 0 = opaque, 127 = invisible
-		Array(0,1),		//Create cryptograms "easy to read" (true / false) // Alternatively compounds consonants and vowels.
-		Array(0,6), 	//font: 0-6
-		Array(4, 10),	//# of chars
-		Array(0,30),    // Space between characters (in pixels)
-		Array(8,16),   // min font size
-		Array(16,22),   // max font size
-		Array(0, 360),	// max angle of rotation
-		Array(0,1), //vertical displacement
-		Array(0,1), //gausssian blur
-		Array(0,1), //grayscale
-		Array(0,2000), //random pixel noise
-		Array(0,20), //random line noise
-		Array(0,10) //random circle noise
+		Array(140,160),		//0- width
+		Array(40,60),		//1- height
+		Array(0,100),		//2-  Intensity of transparency characters (0 -> 127) // 0 = opaque, 127 = invisible
+		Array(0,1),		//3- Create cryptograms "easy to read" (true / false) // Alternatively compounds consonants and vowels.
+		Array(0,6), 	//4- font: 0-6
+		Array(4, 8),	//5- # of chars
+		Array(0,30),    //6-  Space between characters (in pixels)
+		Array(8,16),   //7-  min font size
+		Array(16,22),   //8- max font size
+		Array(0, 360),	//9- max angle of rotation
+		Array(0,1), //10-vertical displacement
+		Array(0,0), //11- gausssian blur
+		Array(0,0), //12-grayscale
+		Array(0,2000), //13-random pixel noise
+		Array(0,20), //14-random line noise
+		Array(0,10), //15-random circle noise
+		Array(0,255), 		//16- bg r
+		Array(0,255), 		//17- bg g
+		Array(0,255), 		//18- bg b
+		Array(0,255), 		//19- font r
+		Array(0,255),		//20- font g
+		Array(0,255),		//21- font b
+		Array(1,3)		//22- color difference 0-2
 		
 	);
+	public function getMaxStrlen(){
+		return $this->geno_range[5][1];
+	}
 	
 	public function dump(){
 		foreach($this->geno as $ele){
@@ -56,12 +73,32 @@ Class Individual{
 		echo "<br>";
 	}
 	
-	public function init(){
+	public function init($seed){
 		$this->num_geno = sizeof($this->geno);
 		
 		for ($i=0; $i<$this->num_geno; $i++){
-			//randomize the initial state
-			$this->geno[$i] = rand($this->geno_range[$i][0], $this->geno_range[$i][1]); 
+			//We manually set the value of initial genotype based on seed
+			//we are doing this to make our first population more stable and easy to solve
+			if ($i==2){
+				$this->geno[$i] = 0;	
+			}else if($i == 4){ // font
+				$this->geno[$i] = 3;
+			}else if($i == 6){
+				$this->geno[$i] = 22;
+			}else if($i == 9){
+					$this->geno[$i] = 0;
+			}else if($i == 11 || $i == 12){
+					$this->geno[$i] = 0;
+			}else if ($i >=16 && $i <=18){//background colors
+				if ($seed % 2 == 0) $this->geno[$i] = 255;
+				else $this->geno[$i] = 0;
+			}else if($i >=19 && $i <=21){//font colors
+				if($seed % 2 == 0) $this->geno[$i] = 0;
+				else $this->geno[$i] = 255;
+			}else{
+				//randomize the initial state
+				$this->geno[$i] = rand($this->geno_range[$i][0], $this->geno_range[$i][1]);
+			}
 		}
 	}
 	
@@ -88,15 +125,15 @@ Class Individual{
 //==================================================================
 //***** To start a new population from scratch******/
 //1. Call init()
-//2. call populate()
 
 // ***** To prepare offsprings for fitness evaluation *****/
 //1. Call fill()
 //2. Call evolve()
+//3. Call generate_image(layer)
 
 //***** Fitness evaluation finished, prepare DB for next geneartion *****/
 //1. Call fill()
-//2. Call cleanup()
+//2. Call evaluate(layer)
 //==================================================================
 Class Population{
 	
@@ -168,17 +205,24 @@ Class Population{
 		//create a new table for this population
 		mysql_connect("localhost",$this->username,$this->password);
 		@mysql_select_db($this->database) or die( "Unable to select database");
-		$query = "CREATE TABLE IF NOT EXISTS ".$this->table."(id MEDIUMINT NOT NULL AUTO_INCREMENT, PRIMARY KEY (id), geno BLOB, gfitness DOUBLE, bfitness DOUBLE)";
+		$query = "CREATE TABLE IF NOT EXISTS ".$this->table."(id MEDIUMINT NOT NULL AUTO_INCREMENT, PRIMARY KEY (id), geno BLOB)";
 		mysql_query($query);
-
 		mysql_close();
 		
+		$this->populate();
+		
+		//create the elitist table to keep track of best performing individuals
+		mysql_connect("localhost",$this->username,$this->password);
+		@mysql_select_db($this->database) or die( "Unable to select database");
+		$query = "CREATE TABLE IF NOT EXISTS elitist(id MEDIUMINT NOT NULL AUTO_INCREMENT, PRIMARY KEY (id), geno BLOB, fitness float)";
+		mysql_query($query);
+		mysql_close();
 	}
 	
-	public function populate(){
+	private function populate(){
 		for ($i=0; $i< $this->equil_size; $i++){
 			$indiv = new Individual();
-			$indiv->init();
+			$indiv->init($i);
 			array_push($this->indivs,$indiv);
 			$this->pop_size++;
 		}
@@ -207,16 +251,24 @@ Class Population{
 		}
 	}
 	
-	public function resize($new_size){
-		$this->pop_size = $new_size;
+	public function extract_pop(){
+		return $this->indivs;
 	}
 	
-	public function add_elements($ele_arr){
+	public function get_table(){
+		return $this->table;
+	}
+	
+	public function combine_pop($ele_arr){
 		
 		foreach ($ele_arr as $ele){
 			array_push($this->indivs, $ele);
 		}
 		$this->pop_size += sizeof ($ele_arr);
+	}
+	
+	public function switch_table($new_table){
+		$this->table = $new_table;
 	}
 	
 	//**evolve() will be called by ea_core
@@ -246,40 +298,35 @@ Class Population{
 		
 		//$offsprings will now include all the offsprings
 		//we want to store it in our DB and send it for fitness evaluation
-		$this->db_rewrite($this->offsprings);
+		$this->db_rewrite($this->offsprings, $this->table);
 		
 	}
 	
 	//db_write will 
-	private function db_rewrite($arr){
+	private function db_rewrite($arr, $table, $fitness = array()){
 		$handle = mysql_connect("localhost",$this->username,$this->password);
 		mysql_select_db($this->database, $handle) or die( "Unable to select database");
 		//first, we drop the original table
-		$query = "TRUNCATE TABLE ".$this->table;
+		$query = "TRUNCATE TABLE $table";
 		$results = mysql_query($query, $handle);
 		if (!$results){
 			die('Invalid query: ' . mysql_error());
 		}
-		
-		//when test flag is set, we generate the fitness values at randoms
-		if ($this->test_flag){
-			foreach($arr as $k=>$ele){
-				$g_rand = mt_rand(0, mt_getrandmax() - 1) / mt_getrandmax();
-				$b_rand = mt_rand(0, mt_getrandmax() - 1) / mt_getrandmax();
-				
+	
+		//now we add new element
+		foreach($arr as $k=>$ele){
+			//check if we are inserting to the elite db
+			if($table == "elitist"){
 				$str_ele = mysql_real_escape_string(serialize($ele));
-				$query = "INSERT INTO $this->table (geno, gfitness, bfitness) VALUE ('$str_ele', $g_rand, $b_rand)";
+				$query = "INSERT INTO $table (geno, fitness) VALUE ('$str_ele', '$fitness[$k]')";
 				$results = mysql_query($query, $handle);
 
 				if (!$results){
 					die('Invalid query: ' . mysql_error());
 				}
-			}
-		}else{
-		//now we add new element
-			foreach($arr as $k=>$ele){
+			}else{
 				$str_ele = mysql_real_escape_string(serialize($ele));
-				$query = "INSERT INTO ".$this->table." (geno) VALUE ('".$str_ele."')";
+				$query = "INSERT INTO $table (geno) VALUE ('$str_ele')";
 				$results = mysql_query($query, $handle);
 
 				if (!$results){
@@ -292,6 +339,9 @@ Class Population{
 	}
 	
 	public function fill($_table){
+		//destroy the current population
+		$this->indivs = array();
+		
 		//copy the population properties into the object
 		mysql_connect("localhost",$this->username,$this->password);
 		@mysql_select_db($this->database) or die( "Unable to select database");
@@ -305,14 +355,14 @@ Class Population{
 		$row = mysql_fetch_assoc($results);
 		$this->table = $row["table_name"];
 		$this->equil_size = (int)$row["equil_size"];
-		$this->pop_size=(int)$row["pop_size"];
+		//$this->pop_size=(int)$row["pop_size"];
 		$this->mut_rate=(float)$row["mut_rate"];
 		$this->cross_rate=(float)$row["cross_rate"];
 		$this->dying_rate =(float)$row["dying_rate"];
 		
 		//deserialize the genotype
 		//fill up $indivs array
-		$query = "SELECT geno,gfitness,bfitness from ".$this->table;
+		$query = "SELECT geno from ".$this->table;
 		$results = mysql_query($query);
 		if (!$results){
 			die('Invalid query: ' . mysql_error());
@@ -323,14 +373,69 @@ Class Population{
 			$geno = new Individual();
 			$geno = unserialize($str_geno);
 			array_push($this->indivs, $geno);
-			
-			//calculate the fitness
-			//fill up $fitness array
-			$fit = ($row["gfitness"]+$row["bfitness"]) / 2;
-			array_push($this->fitness, $fit);
+	
 		}
+		$this->pop_size = sizeof($this->indivs);
 		
 		mysql_close();
+		
+		
+	}
+	
+	
+	//this function will look at the data from our user evaluation
+	//and write to $this->fitness
+	//precondition: $this->indivs is filled
+	public function calculate_fitness(){
+				
+		mysql_connect("localhost",$this->username,$this->password);
+		@mysql_select_db($this->database) or die( "Unable to select database");
+		
+		//First, we fetch all the offsprings, 
+		foreach($this->indivs as $key=>$indiv){
+			/*	$query = "CREATE TABLE IF NOT EXISTS ".$this->table."_antigate"."(id MEDIUMINT NOT NULL AUTO_INCREMENT, PRIMARY KEY (id), geno_id MEDIUMINT, captcha_text VARCHAR(30), image_filename VARCHAR(20), user_answer VARCHAR(30), solving_time INT)"*/
+			
+			$query = "SELECT * from $this->table"."_antigate"." where geno_id=$key";
+			$result = mysql_query($query);
+			if (!$result) {
+			    echo "Could not successfully run query ($query) from DB: " . mysql_error();
+			    exit;
+			}
+			
+			$acc_fitness = array();
+			while($row = mysql_fetch_assoc($result)){
+				$lev = levenshtein($row["captcha_text"], $row["user_answer"]);
+				
+				$lev = ($lev > strlen($row["captcha_text"])) ? strlen($row["captcha_text"]) : $lev;
+				
+		echo("Levenshtein distance for ".$row['captcha_text']." and ".$row['user_answer']." is $lev<br>");
+		
+				//$char_solving_time = $result["solving_time"]/strlen($result["captcha_text"]);
+				array_push($acc_fitness, $lev/strlen($row["captcha_text"]));
+			}
+			//average multiple runs to get the average fitness
+			$cur_fitness = array_sum($acc_fitness)/sizeof($acc_fitness);
+		
+			array_push($this->fitness, $cur_fitness);
+		}
+				
+		//at this point, $this->fitness will contain integers where the higher the value the worse it is
+		//the foreach loop below will normalize it and make it so that the higher value the better it is
+		foreach($this->fitness as $key=>$value){
+			$this->fitness[$key] = 1 - $value;
+			
+		echo("fitness is: ".$this->fitness[$key]." <br>");
+		}
+		
+		
+		//after fitness is calculated, we want to clean the table with user data
+		$query = "TRUNCATE $this->table"."_antigate";
+		$results = mysql_query($query);
+		if (!$results){
+			die('Invalid query: ' . mysql_error());
+		}
+		mysql_close();
+		
 		
 	}
 	
@@ -339,11 +444,17 @@ Class Population{
 		print_r($var);
 		?><pre><?
 	}
-	//cleanup needs to:
+	
+	
+	//evaluate needs to:
 	//1. reduce pop size if pop size != equil size
-	//2. find the best fit individuals
+	//2. find the best fit individuals from user evaluation
 	//3. write it back to the db
-	public function cleanup(){
+	//4. rewrite the elitist table
+	public function evaluate($subfolder){
+		
+		//calculate the fitness
+		$this->calculate_fitness();
 		
 		//fix the population 
 		if ($this->pop_size > $this->equil_size +$this->dying_rate){
@@ -351,6 +462,42 @@ Class Population{
 		}else if ($this->pop_size >$this->equil_size){
 			$this->pop_size = $this->equil_size;
 		}
+		
+		
+		//at this point, we want to fetch our elitist genotypes
+		$elitist = array();
+		$elitist = $this->indivs;
+		$efitness = array();
+		$efitness = $this->fitness;
+		
+		//deserialize the genotype
+		//fill up $elitist array
+		mysql_connect("localhost",$this->username,$this->password);
+		@mysql_select_db($this->database) or die( "Unable to select database");
+		$query = "SELECT * from elitist";
+		$results = mysql_query($query);
+		if (!$results){
+			die('Invalid query: ' . mysql_error());
+		}
+		while ($row = mysql_fetch_assoc($results)){
+			$str_geno = $row["geno"];
+			$geno = new Individual();
+			$geno = unserialize($str_geno);
+			array_push($elitist, $geno);
+			array_push($efitness, $row["fitness"]);
+		}
+		mysql_close();
+		
+		//first, we calculate our elite population
+		
+		//sort our elitist fitness array
+		arsort($efitness);
+		$result = array_slice($efitness, 0, 80, true);
+		foreach($efitness as $key=>$value){
+			if (!array_key_exists($key, $result))
+				unset($elitist);
+		}
+		$this->db_rewrite($elitist, "elitist", $efitness);
 		
 		//re-shuffle the population
 		//first, we want to sort the fitness
@@ -365,7 +512,7 @@ Class Population{
 				unset($this->indivs[$key]);
 		}
 		
-		$this->db_rewrite($this->indivs);
+		$this->db_rewrite($this->indivs, $this->table);
 		
 		mysql_connect("localhost",$this->username,$this->password);
 		@mysql_select_db($this->database) or die( "Unable to select database");
@@ -382,33 +529,36 @@ Class Population{
 		
 		
 		//delete all the captcha image files generated in he pervious run
-		$files = glob('captcha/*'); // get all file names
+		$files = glob('./captcha/'.$subfolder.'/*'); // get all file names
 		foreach($files as $file){ // iterate files
 		  if(is_file($file))
+		echo "deleting image<br>";
 		    unlink($file); // delete file
 		}
 		
 	}
 	
-	public function generate_image(){
+	//must be called after evolve!
+	public function generate_image($subfolder){
 		
 		global  $cryptwidth, $cryptheight, $bgR, $bgG, $bgB, $bgclear, $bgimg, $bgframe, $tfont, $charel, $crypteasy, $charelc, $charelv, $difuplow, $charnbmin, $charnbmax, $charsizemin, $charsizemax, $charanglemax, $charup, $cryptgaussianblur, $cryptgrayscal, $noisepxmin, $noisepxmax, $noiselinemin, $noiselinemax,$nbcirclemin, $nbcirclemax, $noisecolorchar, $brushsize, $noiseup, $cryptformat, $cryptsecure, $cryptusetimer, $cryptusertimererror, $cryptusemax, $cryptoneuse, $img, $ink, $charR, $charG, $charB, $charclear, $xvariation, $charnb, $charcolorrnd, $charcolorrndlevel, $tword, $charspace;
-		foreach ($this->indivs as $key=>$indiv){
+		
+		//create a new table to store the mapping between captchas and their solutions
+		mysql_connect("localhost",$this->username,$this->password);
+		@mysql_select_db($this->database) or die( "Unable to select database");
+		$query = "CREATE TABLE IF NOT EXISTS ".$this->table."_antigate"."(id MEDIUMINT NOT NULL AUTO_INCREMENT, PRIMARY KEY (id), geno_id MEDIUMINT, captcha_text VARCHAR(30), image_filename VARCHAR(20), user_answer VARCHAR(30), solving_time INT)";
+		mysql_query($query);
+		mysql_close();
+		
+		foreach ($this->offsprings as $key=>$indiv){
 			
+		
 			$cryptwidth  = $indiv->getGene(0);  // ​​Width of the cryptogram (in pixels)
 			$cryptheight = $indiv->getGene(1);   // Height of the cryptogram (in pixels)
 
-			$bgR  = 255;         // background color to RGB: Red (0 -> 255)
-			$bgG  = 255;         // Couleur du fond au format RGB: Green (0->255)
-			$bgB  = 255;         // Couleur du fond au format RGB: Blue (0->255)
-
-			$bgclear = true;     // Transparent background (true / false)
-			                     // Only valid for PNG
-
-			$bgimg = '';                					// The bottom of the cryptogram may be an image
-
-			$bgframe = false;    // Add a picture frame (true / false)
-
+			$bgR  = $indiv->getGene(16);         // background color to RGB: Red (0 -> 255)
+			$bgG  = $indiv->getGene(17);         // Couleur du fond au format RGB: Green (0->255)
+			$bgB  = $indiv->getGene(18);         // Couleur du fond au format RGB: Blue (0->255)
 
 			// ----------------------------
 			// Set the character
@@ -416,15 +566,16 @@ Class Population{
 
 			// Color basic character
 
-			$charR = 0;     // Font color in RGB: Red (0 -> 255)
-			$charG = 0;     // Couleur des caractères au format RGB: Green (0->255)
-			$charB = 255;     // Couleur des caractères au format RGB: Blue (0->255)
+			$charR = $indiv->getGene(19);     // Font color in RGB: Red (0 -> 255)
+			$charG = $indiv->getGene(20);     // Couleur des caractères au format RGB: Green (0->255)
+			$charB = $indiv->getGene(21);     // Couleur des caractères au format RGB: Blue (0->255)
 
 			$charclear = $indiv->getGene(2);  // Intensity of transparency characters (0 -> 127)
 											// 0 = opaque, 127 = invisible
 			// Interesting if you use an image $ bgimg
 			// Only if PHP> = 3.2.1
-
+			
+		
 			// Fonts
 			if ($indiv->getGene(4) == 0)
 				$tfont[] = 'Alanden_.ttf';       // The fonts will be used randomly.
@@ -446,16 +597,14 @@ Class Population{
 			// Sensitive. Some characters are easy to confuse, it is
 			// Recommended to choose the characters used.
 
-			$charel = 'ABCDEFGHKLMNPRTWXYZ234569';       // Caractères autorisés
+			$charel = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz12345690';       // Caractères autorisés
 
 			if ($indiv->getGene(3)==0) $crypteasy = false;
 			else $crypteasy = true;       // Create cryptograms "easy to read" (true / false) 
 										// Alternatively compounds consonants and vowels.
-			$charelc = 'BCDFGHKLMNPRTVWXZ';   // consonants to use when $crypteasy = true
-			$charelv = 'AEIOUY';              // Vowels to use when $crypteasy = true
+			$charelc = 'BbCcDdFfGgHhJjKkLlMmNnPpQqRrSsTtVvWwXxYyZz';   // consonants to use when $crypteasy = true
+			$charelv = 'AaEeIiOoUuYy';              // Vowels to use when $crypteasy = true
 
-			$difuplow = false;          // Differentiates Maj / Min when entering the code (true, false)
-			
 		//	echo "charnbmin: $charnbmin | $charnbmax | ".$indiv->getGene(5)." <br>";
 		
 			$charnbmin = $indiv->getGene(5);         // min number of characters
@@ -489,21 +638,34 @@ Class Population{
 			$nbcirclemin = $indiv->getGene(15);      // Noise: Nb minimum random circles 
 			$nbcirclemax = $indiv->getGene(15);      // Noise: Number max of random circles
 
-			$noisecolorchar  = 1;  // Noise: writing pixel color, lines, circles:
+
+			$noisecolorchar  = $indiv->getGene(22);  // Noise: writing pixel color, lines, circles:
 			                       // 1: Color writing characters
 			                       // 2: Background Color
 			                       // 3: Random color
-
-			$brushsize = 1;        // Font size of princeaiu (in pixels)
-			                       // 1 to 25 (the higher values ​​may cause
-			                       // Internal Server Error on some versions of PHP / GD)
-			                       // Does not work on older configurations PHP / GD
-
-			$noiseup = true;      // noise is it above the write (true) or below (false)
-
-
-			$image_name = "./captcha/".(string) $key.".png";
-			generate_captcha($image_name);
+//echo "subfolder:$subfolder<br>";
+	        if (!is_dir("./captcha/$subfolder")){
+//echo "creating folder<br>";
+				mkdir("./captcha/$subfolder");
+			}
+			$image_name = "./captcha/$subfolder/".(string) $key.".jpg";
+			$text = generate_captcha($image_name);
+echo "Generating image: $image_name<br>";
+			//We want to store the image<->text mapping into our table 
+			mysql_connect("localhost",$this->username,$this->password);
+			@mysql_select_db($this->database) or die( "Unable to select database");
+			$query = "CREATE TABLE IF NOT EXISTS ".$this->table."_antigate"."(id MEDIUMINT NOT NULL AUTO_INCREMENT, PRIMARY KEY (id), geno_id MEDIUMINT, captcha_text VARCHAR(30), image_filename VARCHAR(20), user_answer VARCHAR(30), solving_time INT)";
+			mysql_query($query);
+			
+			$safe_img_name = mysql_real_escape_string($image_name);
+			$query = "INSERT INTO $this->table"."_antigate"." (geno_id, captcha_text, image_filename) VALUE ($key, '$text','$safe_img_name')";
+			$result = mysql_query($query);
+			if (!$result) {
+			    echo "Could not successfully run query ($query) from DB: " . mysql_error();
+			    exit;
+			}
+			
+			mysql_close();
 			
 		}
 		
@@ -512,5 +674,3 @@ Class Population{
 	}
 	
 }
-
-?>
