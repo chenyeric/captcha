@@ -533,7 +533,7 @@ Class Population{
 		foreach($files as $file){ // iterate files
 		  if(is_file($file))
 		echo "deleting image<br>";
-		    unlink($file); // delete file
+		    //unlink($file); // delete file
 		}
 		
 	}

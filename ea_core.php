@@ -98,9 +98,9 @@ echo "run() gets called with ".sizeof($this->layers)." layers<br>";
 				echo "image $file has the text $text <br>";
 				
 				//pass the image to anti-gate
-				//$user_output = "test";//dummy
+				$user_output = "test";//dummy
 				//function recognize($filename,$apikey,$is_verbose = true,$sendhost = "antigate.com",$rtimeout = 5,$mtimeout = 120, $is_phrase = 0, $is_regsense = 0, $is_numeric = 0, $min_len = 0, $max_len = 0, $is_russian = 0)
-				$user_output = recognize($file,"9e3a331523a35c307e5440d84204d704",true,"antigate.com");
+				//$user_output = recognize($file,"9e3a331523a35c307e5440d84204d704",true,"antigate.com");
 				if ($user_output){
 					echo "user output: $user_output for text $text.<br>";
 				}

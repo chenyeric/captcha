@@ -4,7 +4,7 @@ include("ea_core.php");
 
 //public function init($rate, $layer_num, $equil_size, $mut_rate, $cross_rate, $dying_rate)
 $ea = new EA_Core();
-$ea->init(10,10,3,0.8,0.8,1);
+$ea->init(10,10,10,0.8,0.8,1);
 $ea->run();
 
 /*
