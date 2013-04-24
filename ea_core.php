@@ -50,17 +50,17 @@ Class EA_Core{
 		mysql_connect("localhost",$this->username,$this->password);
 		@mysql_select_db($this->database) or die( "Unable to select database");
 		$queries = array(
-						 "drop table layer0",
-						 "drop table layer1",
-						 "drop table layer2",
-						 "drop table layer3",
-						 "drop table layer4",
-						 "drop table layer0_antigate",
-						 "drop table layer1_antigate",
-						 "drop table layer2_antigate",
-						 "drop table layer3_antigate",
-						 "drop table layer4_antigate",
-						 "drop table elitist");
+						 "drop table if exists layer0",
+						 "drop table if exists layer1",
+						 "drop table if exists layer2",
+						 "drop table if exists layer3",
+						 "drop table if exists layer4",
+						 "drop table if exists layer0_antigate",
+						 "drop table if exists layer1_antigate",
+						 "drop table if exists layer2_antigate",
+						 "drop table if exists layer3_antigate",
+						 "drop table if exists layer4_antigate",
+						 "drop table if exists elitist");
 		
 		foreach($queries as $query){
 			$result = mysql_query($query);

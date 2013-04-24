@@ -2,10 +2,9 @@
 error_reporting(E_ALL);
 include("ea_core.php");
 
-//public function init($rate, $layer_num, $equil_size, $mut_rate, $cross_rate, $dying_rate)
 $ea = new EA_Core();
-$ea->init(2,10,2,0.1,0.8,1, 10);
 $ea->clean();
+$ea->init(2,10,2,0.1,0.8,1, 2);
 $ea->start();
 //	public function init($rate, $layer_num, $equil_size, $mut_rate, $cross_rate, $dying_rate, $max_age){
 

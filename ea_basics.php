@@ -446,7 +446,7 @@ Class Population{
 			while($row = mysql_fetch_assoc($result)){
 				
 				//first, add the user study info to our indivs
-				$indiv.addAnswers($row['captcha_text'], $row['mturk_answer'], $row['antigate_answer']);
+				$indiv->addAnswers($row['captcha_text'], $row['mturk_answer'], $row['antigate_answer']);
 				
 				//$lev_mturk = levenshtein(strtolower($row["captcha_text"]), strtolower($row["mturk_answer"]));
 				//$lev_antigate = levenshtein(strtolower($row["captcha_text"]), strtolower($row["antigate_answer"]));
@@ -454,7 +454,7 @@ Class Population{
 				//$lev_mturk = ($lev_mturk > strlen($row["captcha_text"])) ? strlen($row["captcha_text"]) : $lev_mturk;
 				//$lev_antigate = ($lev_antigate > strlen($row["captcha_text"])) ? strlen($row["captcha_text"]) : $lev_antigate;
 				
-				echo("lev_mturk: $lev_mturk, lev_antigate: $lev_antigate, str: ".$row['captcha_text']." <br>\n\n");
+				echo("lev_mturk: ".$row['mturk_answer'].", lev_antigate: ".$row['antigate_answer'].", str: ".$row['captcha_text']." <br>\n\n");
 				
 				//TODO: include solving speed into calculation		
 				//$avg_speed = $result["mturk_speed"]/strlen($result["captcha_text"]);
