@@ -9,6 +9,8 @@ Class Individual{
 	//num_geno should equal to the length of the $geno array
 	private $num_geno = 16;
 	
+	private $answers= array();
+	
 	private $geno = Array (
 		0,      //0- width
 		0,      //1- height
@@ -70,7 +72,13 @@ Class Individual{
 		foreach($this->geno as $ele){
 			echo "$ele | ";
 		}
-		echo "<br>";
+		echo "<br>\n";
+	}
+	
+	public function addAnswers($text, $mturk, $antigate){
+		$new_arr = array();
+		array_push($new_arr, $text, $mturk, $antigate);
+		array_push($this->answers, $new_arr);
 	}
 	
 	public function init($seed){
@@ -116,7 +124,7 @@ Class Individual{
 	
 	public function mutateGene($i){
 		$rand = rand($this->geno_range[$i][0], $this->geno_range[$i][1]);
-		//echo "....".$this->geno_range[$i][0]." : ". $this->geno_range[$i][1] ."-". $rand ." ....<br>";
+		//echo "....".$this->geno_range[$i][0]." : ". $this->geno_range[$i][1] ."-". $rand ." ....<br>\n";
 		$this->geno[$i] = $rand;
 	}
 	
@@ -177,24 +185,24 @@ Class Population{
 	}
 	
 	public function dump(){
-		echo "<br><br><br>|||||||||||||||||||||||||||||| dump start |||||||||||||||||||||||||||||||<br>";
-		echo "Size of the population is: $this->pop_size<br>";
-		echo "Size of the \$indivs array is: ".sizeof($this->indivs)."<br>";
-		echo "mut_rate is $this->mut_rate<br>";
-		echo "cross rate is $this->cross_rate<br>";
-		echo "table is $this->table<br>";
+		echo "<br><br><br>\n|||||||||||||||||||||||||||||| dump start |||||||||||||||||||||||||||||||<br>\n";
+		echo "Size of the population is: $this->pop_size<br>\n";
+		echo "Size of the \$indivs array is: ".sizeof($this->indivs)."<br>\n";
+		echo "mut_rate is $this->mut_rate<br>\n";
+		echo "cross rate is $this->cross_rate<br>\n";
+		echo "table is $this->table<br>\n";
 		
-		echo "=========== population dump ============<br>";
+		echo "=========== population dump ============<br>\n";
 		foreach($this->indivs as $indiv){
 			$indiv->dump();
 		}
-		echo "==============================================<br><br><br>";
+		echo "==============================================<br><br><br>\n";
 		
-		echo "=========== offspring dump ============<br>";
+		echo "=========== offspring dump ============<br>\n";
 		foreach($this->offsprings as $offspring){
 			$offspring->dump();
 		}
-	    echo "|||||||||||||||||||||||||||||| dump end |||||||||||||||||||||||||||||||<br><br><br>";
+	    echo "|||||||||||||||||||||||||||||| dump end |||||||||||||||||||||||||||||||<br>\n<br>\n<br>\n";
 		
 	}
 	
@@ -218,7 +226,7 @@ Class Population{
 		//create the elitist table to keep track of best performing individuals
 		mysql_connect("localhost",$this->username,$this->password);
 		@mysql_select_db($this->database) or die( "Unable to select database");
-		$query = "CREATE TABLE IF NOT EXISTS elitist(id MEDIUMINT NOT NULL AUTO_INCREMENT, PRIMARY KEY (id), geno BLOB, fitness float)";
+		$query = "CREATE TABLE IF NOT EXISTS elitist(id MEDIUMINT NOT NULL AUTO_INCREMENT, PRIMARY KEY (id), geno BLOB, fitness int)";
 		mysql_query($query);
 		mysql_close();
 	}
@@ -293,7 +301,7 @@ Class Population{
 		
 		mysql_close();
 		
-		//echo "------------------------------------------------$this->table<br>";
+		//echo "------------------------------------------------$this->table<br>\n";
 	}
 	
 	//**evolve() will be called by ea_core
@@ -323,7 +331,7 @@ Class Population{
 		
 		//$offsprings will now include all the offsprings
 		//we want to store it in our DB and send it for fitness evaluation
-		//echo("~~~~~~~~~~~~~~~~~~~~~~~~~~ table: $this->table size of offspring is ".sizeof($this->offsprings)."type: ".gettype($this->offsprings)."<br>");
+		//echo("~~~~~~~~~~~~~~~~~~~~~~~~~~ table: $this->table size of offspring is ".sizeof($this->offsprings)."type: ".gettype($this->offsprings)."<br>\n");
 
 		$this->db_rewrite($this->offsprings, $this->table);
 		
@@ -436,19 +444,25 @@ Class Population{
 			
 			$acc_fitness = array();
 			while($row = mysql_fetch_assoc($result)){
-				$lev_mturk = levenshtein(strtolower($row["captcha_text"]), strtolower($row["mturk_answer"]));
-				$lev_antigate = levenshtein(strtolower($row["captcha_text"]), strtolower($row["antigate_answer"]));
 				
-				$lev_mturk = ($lev_mturk > strlen($row["captcha_text"])) ? strlen($row["captcha_text"]) : $lev_mturk;
-				$lev_antigate = ($lev_antigate > strlen($row["captcha_text"])) ? strlen($row["captcha_text"]) : $lev_antigate;
+				//first, add the user study info to our indivs
+				$indiv.addAnswers($row['captcha_text'], $row['mturk_answer'], $row['antigate_answer']);
 				
-				echo("lev_mturk: $lev_mturk, lev_antigate: $lev_antigate, str: ".$row['captcha_text']." <br>");
+				//$lev_mturk = levenshtein(strtolower($row["captcha_text"]), strtolower($row["mturk_answer"]));
+				//$lev_antigate = levenshtein(strtolower($row["captcha_text"]), strtolower($row["antigate_answer"]));
+				
+				//$lev_mturk = ($lev_mturk > strlen($row["captcha_text"])) ? strlen($row["captcha_text"]) : $lev_mturk;
+				//$lev_antigate = ($lev_antigate > strlen($row["captcha_text"])) ? strlen($row["captcha_text"]) : $lev_antigate;
+				
+				echo("lev_mturk: $lev_mturk, lev_antigate: $lev_antigate, str: ".$row['captcha_text']." <br>\n\n");
 				
 				//TODO: include solving speed into calculation		
 				//$avg_speed = $result["mturk_speed"]/strlen($result["captcha_text"]);
 				
-				$fit = ($lev_antigate-$lev_mturk)/strlen($row["captcha_text"]);
-				if ($fit<0)$fit =0;
+				//$fit = ($lev_antigate-$lev_mturk)/strlen($row["captcha_text"]);
+				//if ($fit<0)$fit =0;
+				
+				$fit = levenshtein(strtolower($row["mturk_answer"]), strtolower($row["antigate_answer"]));
 				
 				array_push($acc_fitness, $fit);
 			}
@@ -544,7 +558,7 @@ Class Population{
 				unset($this->indivs[$key]);
 		}
 		
-		//echo("~~~~~~~~~~~~~~~~~~~~~~~~~~ table: $this->table size of indiv is ".sizeof($this->indivs)."type: ".gettype($this->indivs)."<br>");
+		//echo("~~~~~~~~~~~~~~~~~~~~~~~~~~ table: $this->table size of indiv is ".sizeof($this->indivs)."type: ".gettype($this->indivs)."<br>\n");
 		$this->db_rewrite($this->indivs, $this->table);
 		
 		mysql_connect("localhost",$this->username,$this->password);
@@ -637,7 +651,7 @@ Class Population{
 			$charelc = 'bcdfghjklmnpqrstvwxyz';   // consonants to use when $crypteasy = true
 			$charelv = 'aeiouy';              // Vowels to use when $crypteasy = true
 
-		//	echo "charnbmin: $charnbmin | $charnbmax | ".$indiv->getGene(5)." <br>";
+		//	echo "charnbmin: $charnbmin | $charnbmax | ".$indiv->getGene(5)." <br>\n";
 		
 			$charnbmin = $indiv->getGene(5);         // min number of characters
 			$charnbmax = $indiv->getGene(5);         // max num of chars
@@ -675,16 +689,16 @@ Class Population{
 			                       // 1: Color writing characters
 			                       // 2: Background Color
 			                       // 3: Random color
-//echo "subfolder:$subfolder<br>";
+//echo "subfolder:$subfolder<br>\n";
 	        if (!is_dir("./captcha/$subfolder")){
-//echo "creating folder<br>";
+//echo "creating folder<br>\n";
 				mkdir("./captcha/$subfolder");
 			}
 			$image_name_1 = "./captcha/$subfolder/".(string) $key."_1.jpg";
 			$image_name_2 = "./captcha/$subfolder/".(string) $key."_2.jpg";
 			$text1 = generate_captcha($image_name_1);
 			$text2 = generate_captcha($image_name_2);
-//echo "Generating image: $image_name<br>";
+//echo "Generating image: $image_name<br>\n";
 			//We want to store the image<->text mapping into our table 
 			mysql_connect("localhost",$this->username,$this->password);
 			@mysql_select_db($this->database) or die( "Unable to select database");

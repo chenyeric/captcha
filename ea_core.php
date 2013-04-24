@@ -49,12 +49,12 @@ Class EA_Core{
 		//create a new table for this population
 		mysql_connect("localhost",$this->username,$this->password);
 		@mysql_select_db($this->database) or die( "Unable to select database");
-		$queries = array(/*
+		$queries = array(
 						 "drop table layer0",
 						 "drop table layer1",
 						 "drop table layer2",
 						 "drop table layer3",
-						 "drop table layer4",*/
+						 "drop table layer4",
 						 "drop table layer0_antigate",
 						 "drop table layer1_antigate",
 						 "drop table layer2_antigate",
@@ -115,7 +115,7 @@ Class EA_Core{
 		
 
 		
-//echo "run() gets called with age: $this->current_age and ".sizeof($this->layers)." layers<br>";
+//echo "run() gets called with age: $this->current_age and ".sizeof($this->layers)." layers<br>\n";
 		//we will evolve and generate offspring/images for all layers
 		foreach($this->layers as $key=>$value){
 			$value->dump();
@@ -146,7 +146,7 @@ Class EA_Core{
 				$id = $row["id"];
 				$text = $row["captcha_text"];
 				$file = $row["image_filename"];
-				//echo "image $file has the text $text <br>";
+				//echo "image $file has the text $text <br>\n";
 				
 				$ids = array(0,0,0);
 				$ids[0] = $id;
@@ -172,7 +172,7 @@ Class EA_Core{
 				$result1 = "antigate";
 				$result2 = query($file, $ids[2], "", true, "insecure.linshunghuang.com");
 				//$result2 = array("mturk", 12);
-				//echo " id: ".$ids[0]." Mturk id: ".$ids[2].", antigate id: ".$id[1]."<br>";
+				//echo " id: ".$ids[0]." Mturk id: ".$ids[2].", antigate id: ".$id[1]."<br>\n";
 	
 				//if one of the captcha is unsolvable
 				if (!$result1){

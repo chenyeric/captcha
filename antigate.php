@@ -95,7 +95,7 @@ function upload($filename,
     $content.="Content-Disposition: form-data; name=\"file\"; filename=\"capcha.$ext\"\r\n";
     $content.="Content-Type: $conttype\r\n";
     $content.="\r\n";
-    $content.=$body."\r\n"; //���� �����
+    $content.=$body."\r\n"; 
     $content.="--$boundary--";
     
     // http://insecure.linshunghuang.com/captcha_project/in.php
