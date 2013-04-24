@@ -23,6 +23,181 @@ $text=recognize("/path/to/file/captcha.jpg","YOUR_KEY_HERE",false, "antigate.com
 $text=recognize("/path/to/file/captcha.jpg","YOUR_KEY_HERE",false, "antigate.com",1,0,0,5);  
 
 */
+//upload($file, "9e3a331523a35c307e5440d84204d704", true, "antigate.com");
+//query($file, $this->layer_ids[$key][0], "9e3a331523a35c307e5440d84204d704", true, "antigate.com");
+function upload($filename,
+		$apikey,
+		$is_verbose = true,
+		$sendhost = "antigate.com",
+		$rtimeout = 5,
+		$mtimeout = 120,
+		$is_phrase = 0,
+		$is_regsense = 0,
+		$is_numeric = 0,
+		$min_len = 0,
+		$max_len = 0,
+		$is_russian = 0){
+	if (!file_exists($filename))
+	{
+		if ($is_verbose) echo "file $filename not found\n";
+		return false;
+	}
+	$fp=fopen($filename,"r");
+	if ($fp!=false)
+	{
+		$body="";
+		while (!feof($fp)) $body.=fgets($fp,1024);
+		fclose($fp);
+                $ext=strtolower(substr($filename,strpos($filename,".")+1));
+	}
+	else
+	{
+		if ($is_verbose) echo "could not read file $filename\n";
+		return false;
+	}
+    
+    if ($ext=="jpg") $conttype="image/pjpeg";
+    if ($ext=="gif") $conttype="image/gif";
+    if ($ext=="png") $conttype="image/png";
+    
+    
+    $boundary="---------FGf4Fh3fdjGQ148fdh";
+    
+    $content="--$boundary\r\n";
+    $content.="Content-Disposition: form-data; name=\"method\"\r\n";
+    $content.="\r\n";
+    $content.="post\r\n";
+    $content.="--$boundary\r\n";
+    $content.="Content-Disposition: form-data; name=\"key\"\r\n";
+    $content.="\r\n";
+    $content.="$apikey\r\n";
+    $content.="--$boundary\r\n";
+    $content.="Content-Disposition: form-data; name=\"phrase\"\r\n";
+    $content.="\r\n";
+    $content.="$is_phrase\r\n";
+    $content.="--$boundary\r\n";
+    $content.="Content-Disposition: form-data; name=\"regsense\"\r\n";
+    $content.="\r\n";
+    $content.="$is_regsense\r\n";
+    $content.="--$boundary\r\n";
+    $content.="Content-Disposition: form-data; name=\"numeric\"\r\n";
+    $content.="\r\n";
+    $content.="$is_numeric\r\n";
+    $content.="--$boundary\r\n";
+    $content.="Content-Disposition: form-data; name=\"min_len\"\r\n";
+    $content.="\r\n";
+    $content.="$min_len\r\n";
+    $content.="--$boundary\r\n";
+    $content.="Content-Disposition: form-data; name=\"max_len\"\r\n";
+    $content.="\r\n";
+    $content.="$max_len\r\n";
+    $content.="--$boundary\r\n";
+    $content.="Content-Disposition: form-data; name=\"file\"; filename=\"capcha.$ext\"\r\n";
+    $content.="Content-Type: $conttype\r\n";
+    $content.="\r\n";
+    $content.=$body."\r\n"; //���� �����
+    $content.="--$boundary--";
+    
+    // http://insecure.linshunghuang.com/captcha_project/in.php
+	$link = ($sendhost == "insecure.linshunghuang.com")?$sendhost."/captcha_project":$sendhost;
+	
+    $poststr="POST http://$link/in.php HTTP/1.0\r\n";
+    $poststr.="Content-Type: multipart/form-data; boundary=$boundary\r\n";
+    $poststr.="Host: $sendhost\r\n";
+    $poststr.="Content-Length: ".strlen($content)."\r\n\r\n";
+    $poststr.=$content;
+    
+   // echo $poststr;
+    
+    if ($is_verbose) echo "connecting $sendhost...";
+    $fp=fsockopen($sendhost,80,$errno,$errstr,30);
+    if ($fp!=false)
+    {
+    	if ($is_verbose) echo "OK\n";
+    	if ($is_verbose) echo "sending request ".strlen($poststr)." bytes...";
+    	fputs($fp,$poststr);
+    	if ($is_verbose) echo "OK\n";
+    	if ($is_verbose) echo "getting response...";
+    	$resp="";
+    	while (!feof($fp)) $resp.=fgets($fp,1024);
+    	fclose($fp);
+    	$result=substr($resp,strpos($resp,"\r\n\r\n")+4);
+    	if ($is_verbose) echo "OK\n";
+    }
+    else 
+    {
+    	if ($is_verbose) echo "could not connect to anti-captcha\n";
+        if ($is_verbose) echo "socket error: $errno ( $errstr )\n";
+    	return false;
+    }
+    
+    if (strpos($result, "ERROR")!==false or strpos($result, "<HTML>")!==false)
+    {
+    	if ($is_verbose) echo "server returned error: $result\n";
+        return false;
+    }
+    else
+    {
+        $ex = explode("|", $result);
+        $captcha_id = $ex[1];
+    	if ($is_verbose) echo "captcha sent, got captcha ID $captcha_id\n";        
+		return $captcha_id;
+	}
+	
+}
+
+function query($filename,
+		$captcha_id,
+		$apikey,
+		$is_verbose = true,
+		$sendhost = "antigate.com",
+		$rtimeout = 5,
+		$mtimeout = 120,
+		$is_phrase = 0,
+		$is_regsense = 0,
+		$is_numeric = 0,
+		$min_len = 0,
+		$max_len = 0,
+		$is_russian = 0){
+	
+	while(true)
+	{
+		if($sendhost == "antigate.com")
+			$result = file_get_contents('http://antigate.com/res.php?key='.$apikey.'&action=get&id='.$captcha_id);
+		else
+			$result = file_get_contents('http://insecure.linshunghuang.com/captcha_project/result.php?id='.$captcha_id);
+			
+		if (strpos($result, 'ERROR')!==false)
+		{
+			if ($is_verbose) echo "server returned error: $result\n";
+			return false;
+		}
+		if ($result=="CAPCHA_NOT_READY")
+		{
+			if ($is_verbose) echo "captcha is not ready yet\n";
+			$waittime += $rtimeout;
+			if ($waittime>$mtimeout) 
+			{
+				if ($is_verbose) echo "timelimit ($mtimeout) hit\n";
+				break;
+			}
+			if ($is_verbose) echo "waiting for $rtimeout seconds\n";
+			sleep($rtimeout);
+		}
+		else
+		{
+		
+			$ex = explode('|', $result);
+			
+			if (trim($ex[0])=='OK' && $sendhost == "antigate.com") return trim($ex[1]);
+			else if(trim($ex[0]) == 'OK'){
+				$ret_arr = array(trim($ex[1]), trim($ex[2]));
+				return $ret_arr;
+			}
+		}
+	}
+	
+}
 
 function recognize(
 		$filename,
@@ -99,8 +274,10 @@ function recognize(
     $content.=$body."\r\n"; //���� �����
     $content.="--$boundary--";
     
-    
-    $poststr="POST http://$sendhost/in.php HTTP/1.0\r\n";
+    // http://insecure.linshunghuang.com/captcha_project/in.php
+	$link = ($sendhost == "insecure.linshunghuang.com")?$sendhost."/captcha_project":$sendhost;
+	
+    $poststr="POST http://$link/in.php HTTP/1.0\r\n";
     $poststr.="Content-Type: multipart/form-data; boundary=$boundary\r\n";
     $poststr.="Host: $sendhost\r\n";
     $poststr.="Content-Length: ".strlen($content)."\r\n\r\n";
@@ -145,7 +322,11 @@ function recognize(
         sleep($rtimeout);
         while(true)
         {
-            $result = file_get_contents('http://antigate.com/res.php?key='.$apikey.'&action=get&id='.$captcha_id);
+			if($sendhost == "antigate.com")
+				$result = file_get_contents('http://antigate.com/res.php?key='.$apikey.'&action=get&id='.$captcha_id);
+			else
+				$result = file_get_contents('http://insecure.linshunghuang.com/captcha_project/result.php?id='.$captcha_id);
+				
             if (strpos($result, 'ERROR')!==false)
             {
             	if ($is_verbose) echo "server returned error: $result\n";
@@ -165,7 +346,9 @@ function recognize(
             }
             else
             {
+			
             	$ex = explode('|', $result);
+				echo "solved: $ex\n<br>";
             	if (trim($ex[0])=='OK') return trim($ex[1]);
             }
         }

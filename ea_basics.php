@@ -42,7 +42,7 @@ Class Individual{
 		Array(0,100),		//2-  Intensity of transparency characters (0 -> 127) // 0 = opaque, 127 = invisible
 		Array(0,1),		//3- Create cryptograms "easy to read" (true / false) // Alternatively compounds consonants and vowels.
 		Array(0,6), 	//4- font: 0-6
-		Array(4, 8),	//5- # of chars
+		Array(6, 6),	//5- # of chars
 		Array(0,30),    //6-  Space between characters (in pixels)
 		Array(8,16),   //7-  min font size
 		Array(16,22),   //8- max font size
@@ -177,8 +177,12 @@ Class Population{
 	}
 	
 	public function dump(){
+		echo "<br><br><br>|||||||||||||||||||||||||||||| dump start |||||||||||||||||||||||||||||||<br>";
 		echo "Size of the population is: $this->pop_size<br>";
 		echo "Size of the \$indivs array is: ".sizeof($this->indivs)."<br>";
+		echo "mut_rate is $this->mut_rate<br>";
+		echo "cross rate is $this->cross_rate<br>";
+		echo "table is $this->table<br>";
 		
 		echo "=========== population dump ============<br>";
 		foreach($this->indivs as $indiv){
@@ -190,7 +194,7 @@ Class Population{
 		foreach($this->offsprings as $offspring){
 			$offspring->dump();
 		}
-		echo "==============================================<br><br><br>";
+	    echo "|||||||||||||||||||||||||||||| dump end |||||||||||||||||||||||||||||||<br><br><br>";
 		
 	}
 	
@@ -234,7 +238,7 @@ Class Population{
 				"VALUE ('".$this->table."',".$this->equil_size.",".$this->pop_size.",".$this->mut_rate.",".$this->cross_rate.",".$this->dying_rate.");";
 		$results = mysql_query($query, $handle);
 		if (!$results){
-			die('Invalid query: ' . mysql_error());
+			die('Invalid query 2: ' . mysql_error());
 		}
 		
 		//store the population into the DB and send it for fitness evaluation
@@ -245,7 +249,7 @@ Class Population{
 			$results = mysql_query($query, $handle);
 
 			if (!$results){
-				die('Invalid query: ' . mysql_error());
+				die('Invalid query 3: ' . mysql_error());
 			}
 			mysql_close();	
 		}
@@ -269,6 +273,27 @@ Class Population{
 	
 	public function switch_table($new_table){
 		$this->table = $new_table;
+		//create a new table for this population
+		mysql_connect("localhost",$this->username,$this->password);
+		@mysql_select_db($this->database) or die( "Unable to select database");
+		$query = "CREATE TABLE IF NOT EXISTS ".$this->table."(id MEDIUMINT NOT NULL AUTO_INCREMENT, PRIMARY KEY (id), geno BLOB)";
+		mysql_query($query);
+		$results = mysql_query($query);
+		if (!$results){
+			die('Invalid query 13: ' . mysql_error());
+		}
+		//we also want to write population properties into the DB
+		//store the properties of the population
+		$query = "REPLACE INTO pop_config (table_name, equil_size, pop_size, mut_rate, cross_rate, dying_rate) VALUE ('$this->table', $this->equil_size, $this->pop_size, $this->mut_rate, $this->cross_rate, $this->dying_rate);";
+		
+		$results = mysql_query($query);
+		if (!$results){
+			die('Invalid query 14: ' . mysql_error());
+		}
+		
+		mysql_close();
+		
+		//echo "------------------------------------------------$this->table<br>";
 	}
 	
 	//**evolve() will be called by ea_core
@@ -298,6 +323,8 @@ Class Population{
 		
 		//$offsprings will now include all the offsprings
 		//we want to store it in our DB and send it for fitness evaluation
+		//echo("~~~~~~~~~~~~~~~~~~~~~~~~~~ table: $this->table size of offspring is ".sizeof($this->offsprings)."type: ".gettype($this->offsprings)."<br>");
+
 		$this->db_rewrite($this->offsprings, $this->table);
 		
 	}
@@ -310,7 +337,7 @@ Class Population{
 		$query = "TRUNCATE TABLE $table";
 		$results = mysql_query($query, $handle);
 		if (!$results){
-			die('Invalid query: ' . mysql_error());
+			die('Invalid query 4: '.$query." error:" . mysql_error());
 		}
 	
 		//now we add new element
@@ -318,11 +345,11 @@ Class Population{
 			//check if we are inserting to the elite db
 			if($table == "elitist"){
 				$str_ele = mysql_real_escape_string(serialize($ele));
-				$query = "INSERT INTO $table (geno, fitness) VALUE ('$str_ele', '$fitness[$k]')";
+				$query = "INSERT INTO $table (geno, fitness) VALUE ('$str_ele', $fitness[$k])";
 				$results = mysql_query($query, $handle);
 
 				if (!$results){
-					die('Invalid query: ' . mysql_error());
+					die('Invalid query 5: ' . mysql_error());
 				}
 			}else{
 				$str_ele = mysql_real_escape_string(serialize($ele));
@@ -330,7 +357,7 @@ Class Population{
 				$results = mysql_query($query, $handle);
 
 				if (!$results){
-					die('Invalid query: ' . mysql_error());
+					die('Invalid query 6: ' . mysql_error());
 				}
 			}
 		}
@@ -339,6 +366,8 @@ Class Population{
 	}
 	
 	public function fill($_table){
+		
+		
 		//destroy the current population
 		$this->indivs = array();
 		
@@ -349,7 +378,7 @@ Class Population{
 		$query = "SELECT * from pop_config where table_name='".$_table."'";
 		$results = mysql_query($query);
 		if (!$results){
-			die('Invalid query: ' . mysql_error());
+			die('Invalid query 7: ' . mysql_error());
 		}
 		
 		$row = mysql_fetch_assoc($results);
@@ -362,10 +391,10 @@ Class Population{
 		
 		//deserialize the genotype
 		//fill up $indivs array
-		$query = "SELECT geno from ".$this->table;
+		$query = "SELECT geno from ".$_table;
 		$results = mysql_query($query);
 		if (!$results){
-			die('Invalid query: ' . mysql_error());
+			die('Invalid query 8 table: '.$_table.', query: ' . mysql_error());
 		}
 		while ($row = mysql_fetch_assoc($results)){
 			
@@ -377,6 +406,8 @@ Class Population{
 		}
 		$this->pop_size = sizeof($this->indivs);
 		
+		$this->offsprings = array();
+		
 		mysql_close();
 		
 		
@@ -387,44 +418,44 @@ Class Population{
 	//and write to $this->fitness
 	//precondition: $this->indivs is filled
 	public function calculate_fitness(){
-				
+		//empty fitness array		
+		$this->fitness = array();
+		
 		mysql_connect("localhost",$this->username,$this->password);
 		@mysql_select_db($this->database) or die( "Unable to select database");
 		
-		//First, we fetch all the offsprings, 
-		foreach($this->indivs as $key=>$indiv){
-			/*	$query = "CREATE TABLE IF NOT EXISTS ".$this->table."_antigate"."(id MEDIUMINT NOT NULL AUTO_INCREMENT, PRIMARY KEY (id), geno_id MEDIUMINT, captcha_text VARCHAR(30), image_filename VARCHAR(20), user_answer VARCHAR(30), solving_time INT)"*/
+		//First, we fetch all the offsprings,
+		foreach($this->indivs as $key=>$indiv){			
 			
 			$query = "SELECT * from $this->table"."_antigate"." where geno_id=$key";
 			$result = mysql_query($query);
 			if (!$result) {
-			    echo "Could not successfully run query ($query) from DB: " . mysql_error();
+			    echo "Could not successfully run query 12 ($query) from DB: " . mysql_error();
 			    exit;
 			}
 			
 			$acc_fitness = array();
 			while($row = mysql_fetch_assoc($result)){
-				$lev = levenshtein($row["captcha_text"], $row["user_answer"]);
+				$lev_mturk = levenshtein(strtolower($row["captcha_text"]), strtolower($row["mturk_answer"]));
+				$lev_antigate = levenshtein(strtolower($row["captcha_text"]), strtolower($row["antigate_answer"]));
 				
-				$lev = ($lev > strlen($row["captcha_text"])) ? strlen($row["captcha_text"]) : $lev;
+				$lev_mturk = ($lev_mturk > strlen($row["captcha_text"])) ? strlen($row["captcha_text"]) : $lev_mturk;
+				$lev_antigate = ($lev_antigate > strlen($row["captcha_text"])) ? strlen($row["captcha_text"]) : $lev_antigate;
 				
-		echo("Levenshtein distance for ".$row['captcha_text']." and ".$row['user_answer']." is $lev<br>");
-		
-				//$char_solving_time = $result["solving_time"]/strlen($result["captcha_text"]);
-				array_push($acc_fitness, $lev/strlen($row["captcha_text"]));
+				echo("lev_mturk: $lev_mturk, lev_antigate: $lev_antigate, str: ".$row['captcha_text']." <br>");
+				
+				//TODO: include solving speed into calculation		
+				//$avg_speed = $result["mturk_speed"]/strlen($result["captcha_text"]);
+				
+				$fit = ($lev_antigate-$lev_mturk)/strlen($row["captcha_text"]);
+				if ($fit<0)$fit =0;
+				
+				array_push($acc_fitness, $fit);
 			}
 			//average multiple runs to get the average fitness
 			$cur_fitness = array_sum($acc_fitness)/sizeof($acc_fitness);
 		
 			array_push($this->fitness, $cur_fitness);
-		}
-				
-		//at this point, $this->fitness will contain integers where the higher the value the worse it is
-		//the foreach loop below will normalize it and make it so that the higher value the better it is
-		foreach($this->fitness as $key=>$value){
-			$this->fitness[$key] = 1 - $value;
-			
-		echo("fitness is: ".$this->fitness[$key]." <br>");
 		}
 		
 		
@@ -432,7 +463,7 @@ Class Population{
 		$query = "TRUNCATE $this->table"."_antigate";
 		$results = mysql_query($query);
 		if (!$results){
-			die('Invalid query: ' . mysql_error());
+			die('Invalid query 9: ' . mysql_error());
 		}
 		mysql_close();
 		
@@ -477,7 +508,7 @@ Class Population{
 		$query = "SELECT * from elitist";
 		$results = mysql_query($query);
 		if (!$results){
-			die('Invalid query: ' . mysql_error());
+			die('Invalid query 10: ' . mysql_error());
 		}
 		while ($row = mysql_fetch_assoc($results)){
 			$str_geno = $row["geno"];
@@ -492,11 +523,12 @@ Class Population{
 		
 		//sort our elitist fitness array
 		arsort($efitness);
-		$result = array_slice($efitness, 0, 80, true);
+		$result = array_slice($efitness, 0, 20, true);
 		foreach($efitness as $key=>$value){
 			if (!array_key_exists($key, $result))
-				unset($elitist);
+				unset($elitist[$key]);
 		}
+		
 		$this->db_rewrite($elitist, "elitist", $efitness);
 		
 		//re-shuffle the population
@@ -504,7 +536,7 @@ Class Population{
 		arsort($this->fitness);
 		
 		//after fitness is sorted, we want to weed out weaker offsprings
-		$result = array_slice($this->fitness,0, $this->pop_size, true);
+		$result = array_slice($this->fitness,0, $this->equil_size, true);
 		
 		//$result now contains the offsprings that needs to be removed
 		foreach($this->fitness as $key=>$value){
@@ -512,6 +544,7 @@ Class Population{
 				unset($this->indivs[$key]);
 		}
 		
+		//echo("~~~~~~~~~~~~~~~~~~~~~~~~~~ table: $this->table size of indiv is ".sizeof($this->indivs)."type: ".gettype($this->indivs)."<br>");
 		$this->db_rewrite($this->indivs, $this->table);
 		
 		mysql_connect("localhost",$this->username,$this->password);
@@ -522,7 +555,7 @@ Class Population{
 		
 		$results = mysql_query($query);
 		if (!$results){
-			die('Invalid query: ' . mysql_error());
+			die('Invalid query 1: ' . mysql_error());
 		}
 		
 		mysql_close();
@@ -532,8 +565,7 @@ Class Population{
 		$files = glob('./captcha/'.$subfolder.'/*'); // get all file names
 		foreach($files as $file){ // iterate files
 		  if(is_file($file))
-		echo "deleting image<br>";
-		    //unlink($file); // delete file
+		    unlink($file); // delete file
 		}
 		
 	}
@@ -546,13 +578,13 @@ Class Population{
 		//create a new table to store the mapping between captchas and their solutions
 		mysql_connect("localhost",$this->username,$this->password);
 		@mysql_select_db($this->database) or die( "Unable to select database");
-		$query = "CREATE TABLE IF NOT EXISTS ".$this->table."_antigate"."(id MEDIUMINT NOT NULL AUTO_INCREMENT, PRIMARY KEY (id), geno_id MEDIUMINT, captcha_text VARCHAR(30), image_filename VARCHAR(20), user_answer VARCHAR(30), solving_time INT)";
+		$query = "CREATE TABLE IF NOT EXISTS ".$this->table."_antigate"."(id MEDIUMINT NOT NULL AUTO_INCREMENT, PRIMARY KEY (id), geno_id MEDIUMINT, captcha_text VARCHAR(30), image_filename VARCHAR(20), antigate_answer VARCHAR(30), mturk_answer VARCHAR(30), mturk_speed INT)";
 		mysql_query($query);
 		mysql_close();
 		
 		foreach ($this->offsprings as $key=>$indiv){
 			
-		
+			
 			$cryptwidth  = $indiv->getGene(0);  // ​​Width of the cryptogram (in pixels)
 			$cryptheight = $indiv->getGene(1);   // Height of the cryptogram (in pixels)
 
@@ -597,13 +629,13 @@ Class Population{
 			// Sensitive. Some characters are easy to confuse, it is
 			// Recommended to choose the characters used.
 
-			$charel = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz12345690';       // Caractères autorisés
+			$charel = 'abcdefghijklmnopqrstuvwxyz';       // Caractères autorisés
 
 			if ($indiv->getGene(3)==0) $crypteasy = false;
 			else $crypteasy = true;       // Create cryptograms "easy to read" (true / false) 
 										// Alternatively compounds consonants and vowels.
-			$charelc = 'BbCcDdFfGgHhJjKkLlMmNnPpQqRrSsTtVvWwXxYyZz';   // consonants to use when $crypteasy = true
-			$charelv = 'AaEeIiOoUuYy';              // Vowels to use when $crypteasy = true
+			$charelc = 'bcdfghjklmnpqrstvwxyz';   // consonants to use when $crypteasy = true
+			$charelv = 'aeiouy';              // Vowels to use when $crypteasy = true
 
 		//	echo "charnbmin: $charnbmin | $charnbmax | ".$indiv->getGene(5)." <br>";
 		
@@ -648,17 +680,28 @@ Class Population{
 //echo "creating folder<br>";
 				mkdir("./captcha/$subfolder");
 			}
-			$image_name = "./captcha/$subfolder/".(string) $key.".jpg";
-			$text = generate_captcha($image_name);
-echo "Generating image: $image_name<br>";
+			$image_name_1 = "./captcha/$subfolder/".(string) $key."_1.jpg";
+			$image_name_2 = "./captcha/$subfolder/".(string) $key."_2.jpg";
+			$text1 = generate_captcha($image_name_1);
+			$text2 = generate_captcha($image_name_2);
+//echo "Generating image: $image_name<br>";
 			//We want to store the image<->text mapping into our table 
 			mysql_connect("localhost",$this->username,$this->password);
 			@mysql_select_db($this->database) or die( "Unable to select database");
-			$query = "CREATE TABLE IF NOT EXISTS ".$this->table."_antigate"."(id MEDIUMINT NOT NULL AUTO_INCREMENT, PRIMARY KEY (id), geno_id MEDIUMINT, captcha_text VARCHAR(30), image_filename VARCHAR(20), user_answer VARCHAR(30), solving_time INT)";
+			$query = "CREATE TABLE IF NOT EXISTS ".$this->table."_antigate".
+				"(id MEDIUMINT NOT NULL AUTO_INCREMENT, PRIMARY KEY (id), geno_id MEDIUMINT, captcha_text VARCHAR(30), image_filename VARCHAR(20), antigate_answer VARCHAR(30), mturk_answer VARCHAR(30), mturk_speed INT)";
 			mysql_query($query);
 			
-			$safe_img_name = mysql_real_escape_string($image_name);
-			$query = "INSERT INTO $this->table"."_antigate"." (geno_id, captcha_text, image_filename) VALUE ($key, '$text','$safe_img_name')";
+			$safe_img_name = mysql_real_escape_string($image_name_1);
+			$query = "INSERT INTO $this->table"."_antigate"." (geno_id, captcha_text, image_filename) VALUE ($key, '$text1','$safe_img_name')";
+			$result = mysql_query($query);
+			if (!$result) {
+			    echo "Could not successfully run query ($query) from DB: " . mysql_error();
+			    exit;
+			}
+			
+			$safe_img_name = mysql_real_escape_string($image_name_2);
+			$query = "INSERT INTO $this->table"."_antigate"." (geno_id, captcha_text, image_filename) VALUE ($key, '$text2','$safe_img_name')";
 			$result = mysql_query($query);
 			if (!$result) {
 			    echo "Could not successfully run query ($query) from DB: " . mysql_error();

@@ -64,12 +64,12 @@ $tfont[] = 'luggerbu.ttf';         // Add as many rows as you want
 // Sensitive. Some characters are easy to confuse, it is
 // Recommended to choose the characters used.
 
-$charel = 'ABCDEFGHKLMNPRTWXYZ234569';       // Caractères autorisés
+$charel = 'abcdefghijklmnopqrstuvwxyz';       // Caractères autorisés
 
 $crypteasy = true;       // Create cryptograms "easy to read" (true / false). Alternatively compounds consonants and vowels.
 
-$charelc = 'BCDFGHKLMNPRTVWXZ';   // consonants to use when $crypteasy = true
-$charelv = 'AEIOUY';              // Vowels to use when $crypteasy = true
+$charelc = 'bcdfghjklmnpqrstvwxyz';   // consonants to use when $crypteasy = true
+$charelv = 'aeiouy';              // Vowels to use when $crypteasy = true
 
 $difuplow = true;          // Differentiates Maj / Min when entering the code (true, false)
 
