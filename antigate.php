@@ -56,7 +56,7 @@ function upload($filename,
 		return false;
 	}
     
-    if ($ext=="jpg") $conttype="image/pjpeg";
+    if ($ext=="jpg" || $ext=="jpeg") $conttype="image/jpeg";
     if ($ext=="gif") $conttype="image/gif";
     if ($ext=="png") $conttype="image/png";
     
