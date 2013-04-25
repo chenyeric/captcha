@@ -163,6 +163,7 @@ function query($filename,
 	
 	while(true)
 	{
+		echo "captcha id: $captcha_id\n";
 		if($sendhost == "antigate.com")
 			$result = file_get_contents('http://antigate.com/res.php?key='.$apikey.'&action=get&id='.$captcha_id);
 		else

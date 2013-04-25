@@ -105,7 +105,7 @@ if ($handle = opendir('./'.$table)) {
     
     
      foreach($mturk_arr as $key=>$value){
-        echo $value[3]."\n";
+        //echo $value[3]."\n";
         $value[4] = query("./$table/$value[1].jpeg", $value[3],"9e3a331523a35c307e5440d84204d704", true, "antigate.com");
         
         if (!$value[4]){
