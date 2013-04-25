@@ -59,6 +59,7 @@ function upload($filename,
     if ($ext=="jpg" || $ext=="jpeg") $conttype="image/jpeg";
     if ($ext=="gif") $conttype="image/gif";
     if ($ext=="png") $conttype="image/png";
+	else $conttype = "image/jpeg";
     
     
     $boundary="---------FGf4Fh3fdjGQ148fdh";
