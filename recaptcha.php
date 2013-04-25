@@ -51,16 +51,15 @@ if ($handle = opendir('./'.$table)) {
             $result2 = array("~~~~~~~~~~", -1);
         }
         
-        $result1 = mysql_real_escape_string($result1);
-        $result2[0] = mysql_real_escape_string($result2[0]);
-        $result2[1] = mysql_real_escape_string($result2[1]);
+        $result1 = mysql_escape_string($result1);
+        $result2[0] = mysql_escape_string($result2[0]);
+        $result2[1] = mysql_escape_string($result2[1]);
                 
         $fitness = levenshtein($result1, $result2[0]);
         
         mysql_connect("localhost",$username,$password);
         @mysql_select_db($database) or die( "Unable to select database");
         
-        echo $files[$key][1];
         //	$query = "CREATE TABLE IF NOT EXISTS ".$table."(id MEDIUMINT NOT NULL AUTO_INCREMENT, PRIMARY KEY (id), text VARCHAR(30),".
         //     " mturk VARCHAR(30), antigate VARCHAR(30), fitness int)";
         $query = "INSERT INTO $table (text, mturk, mturk_time, antigate, fitness) VALUE ('".$files[$key][1]."', '".$result2[0]."', ".$result2[1].", '$result1', $fitness)";
