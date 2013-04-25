@@ -109,42 +109,45 @@ function upload($filename,
     $poststr.=$content;
     
    // echo $poststr;
-    
-    if ($is_verbose) echo "connecting $sendhost...";
-    $fp=fsockopen($sendhost,80,$errno,$errstr,30);
-    if ($fp!=false)
-    {
-    	if ($is_verbose) echo "OK\n";
-    	if ($is_verbose) echo "sending request ".strlen($poststr)." bytes...";
-    	fputs($fp,$poststr);
-    	if ($is_verbose) echo "OK\n";
-    	if ($is_verbose) echo "getting response...";
-    	$resp="";
-    	while (!feof($fp)) $resp.=fgets($fp,1024);
-    	fclose($fp);
-    	$result=substr($resp,strpos($resp,"\r\n\r\n")+4);
-    	if ($is_verbose) echo "OK\n";
-    }
-    else 
-    {
-    	if ($is_verbose) echo "could not connect to anti-captcha\n";
-        if ($is_verbose) echo "socket error: $errno ( $errstr )\n";
-    	return false;
-    }
-    
-    if (strpos($result, "ERROR")!==false or strpos($result, "<HTML>")!==false)
-    {
-    	if ($is_verbose) echo "server returned error: $result\n";
-        return false;
-    }
-    else
-    {
-        $ex = explode("|", $result);
-        $captcha_id = $ex[1];
-    	if ($is_verbose) echo "captcha sent, got captcha ID $captcha_id\n";        
-		return $captcha_id;
+    while(true){
+		if ($is_verbose) echo "connecting $sendhost...";
+		$fp=fsockopen($sendhost,80,$errno,$errstr,30);
+		if ($fp!=false)
+		{
+			if ($is_verbose) echo "OK\n";
+			if ($is_verbose) echo "sending request ".strlen($poststr)." bytes...";
+			fputs($fp,$poststr);
+			if ($is_verbose) echo "OK\n";
+			if ($is_verbose) echo "getting response...";
+			$resp="";
+			while (!feof($fp)) $resp.=fgets($fp,1024);
+			fclose($fp);
+			$result=substr($resp,strpos($resp,"\r\n\r\n")+4);
+			if ($is_verbose) echo "OK\n";
+		}
+		else 
+		{
+			if ($is_verbose) echo "could not connect to anti-captcha\n";
+			if ($is_verbose) echo "socket error: $errno ( $errstr )\n";
+			return false;
+		}
+		
+		if ($result == "ERROR_NO_SLOT_AVAILABLE"){
+			sleep($rtimeout * 2);
+		}
+		else if (strpos($result, "ERROR")!==false or strpos($result, "<HTML>")!==false)
+		{
+			if ($is_verbose) echo "server returned error: $result\n";
+			return false;
+		}
+		else
+		{
+			$ex = explode("|", $result);
+			$captcha_id = $ex[1];
+			if ($is_verbose) echo "captcha sent, got captcha ID $captcha_id\n";        
+			return $captcha_id;
+		}
 	}
-	
 }
 
 function query($filename,
