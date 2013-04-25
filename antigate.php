@@ -30,7 +30,7 @@ function upload($filename,
 		$is_verbose = true,
 		$sendhost = "antigate.com",
 		$rtimeout = 5,
-		$mtimeout = 120,
+		$mtimeout = 99999,
 		$is_phrase = 0,
 		$is_regsense = 0,
 		$is_numeric = 0,
@@ -132,10 +132,10 @@ function upload($filename,
 			return false;
 		}
 		
-		if ($result == "ERROR_NO_SLOT_AVAILABLE"){
+		if (strpos($result, "ERROR_NO_SLOT_AVAILABLE")!==false){
 			sleep($rtimeout * 2);
 		}
-		else if (strpos($result, "ERROR")!==false or strpos($result, "<HTML>")!==false)
+		elseif (strpos($result, "ERROR")!==false or strpos($result, "<HTML>")!==false)
 		{
 			if ($is_verbose) echo "server returned error: $result\n";
 			return false;
@@ -195,7 +195,7 @@ function query($filename,
 			$ex = explode('|', $result);
 			
 			if (trim($ex[0])=='OK' && $sendhost == "antigate.com") return trim($ex[1]);
-			else if(trim($ex[0]) == 'OK'){
+			elseif(trim($ex[0]) == 'OK'){
 				$ret_arr = array(trim($ex[1]), trim($ex[2]));
 				return $ret_arr;
 			}
@@ -210,7 +210,7 @@ function recognize(
 		$is_verbose = true,
 		$sendhost = "antigate.com",
 		$rtimeout = 5,
-		$mtimeout = 120,
+		$mtimeout = 99999,
 		$is_phrase = 0,
 		$is_regsense = 0,
 		$is_numeric = 0,
@@ -312,7 +312,10 @@ function recognize(
     	return false;
     }
     
-    if (strpos($result, "ERROR")!==false or strpos($result, "<HTML>")!==false)
+	if (strpos($result, "ERROR_NO_SLOT_AVAILABLE")!==false){
+			sleep($rtimeout * 2);
+	}
+	elseif(strpos($result, "ERROR")!==false or strpos($result, "<HTML>")!==false)
     {
     	if ($is_verbose) echo "server returned error: $result\n";
         return false;
