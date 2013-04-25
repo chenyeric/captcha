@@ -168,9 +168,9 @@ Class EA_Core{
 			foreach($layer_id as $key=>$ids) {
 			
 			
-				//$result1 = query($file, $ids[1], "9e3a331523a35c307e5440d84204d704", true, "antigate.com");
+				//$result1 = query($file, $ids[1], "9e3a331523a35c307e5440d84204d704", true, "antigate.com", 10, 9999);
 				$result1 = "antigate";
-				$result2 = query($file, $ids[2], "", true, "insecure.linshunghuang.com");
+				$result2 = query($file, $ids[2], "", true, "insecure.linshunghuang.com", 20, 999999);
 				//$result2 = array("mturk", 12);
 				//echo " id: ".$ids[0]." Mturk id: ".$ids[2].", antigate id: ".$id[1]."<br>\n";
 	
@@ -179,9 +179,13 @@ Class EA_Core{
 					$result1 = "~~~~~~~~~~";
 				}
 				if (!$result2){
-					$result2 = "~~~~~~~~~~";
+					$result2 = array("~~~~~~~~~~", -1);
 				}
 				
+				$result1 = mysql_real_escape_string($result1);
+				$result2[0] = mysql_real_escape_string($result2[0]);
+				$result2[1] = mysql_real_escape_string($result2[1]);
+
 				
 				//write result back to db
 				$query = "UPDATE ".$this->layers[$layer_num]->get_table()."_antigate SET antigate_answer='$result1' WHERE id=".$ids[0];
