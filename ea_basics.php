@@ -45,10 +45,10 @@ Class Individual{
 		Array(0,1),		//3- Create cryptograms "easy to read" (true / false) // Alternatively compounds consonants and vowels.
 		Array(0,6), 	//4- font: 0-6
 		Array(6, 6),	//5- # of chars
-		Array(0,30),    //6-  Space between characters (in pixels)
+		Array(17,22),    //6-  Space between characters (in pixels)
 		Array(8,16),   //7-  min font size
 		Array(16,22),   //8- max font size
-		Array(0, 360),	//9- max angle of rotation
+		Array(0, 90),	//9- max angle of rotation
 		Array(0,1), //10-vertical displacement
 		Array(0,0), //11- gausssian blur
 		Array(0,0), //12-grayscale
@@ -83,29 +83,34 @@ Class Individual{
 	
 	public function init($seed){
 		$this->num_geno = sizeof($this->geno);
-		
-		for ($i=0; $i<$this->num_geno; $i++){
-			//We manually set the value of initial genotype based on seed
-			//we are doing this to make our first population more stable and easy to solve
-			if ($i==2){
-				$this->geno[$i] = 0;	
-			}else if($i == 4){ // font
-				$this->geno[$i] = 3;
-			}else if($i == 6){
-				$this->geno[$i] = 22;
-			}else if($i == 9){
-					$this->geno[$i] = 0;
-			}else if($i == 11 || $i == 12){
-					$this->geno[$i] = 0;
-			}else if ($i >=16 && $i <=18){//background colors
-				if ($seed % 2 == 0) $this->geno[$i] = 255;
-				else $this->geno[$i] = 0;
-			}else if($i >=19 && $i <=21){//font colors
-				if($seed % 2 == 0) $this->geno[$i] = 0;
-				else $this->geno[$i] = 255;
-			}else{
-				//randomize the initial state
-				$this->geno[$i] = rand($this->geno_range[$i][0], $this->geno_range[$i][1]);
+		if ($seed%10 ==0){
+			for ($i=0; $i<$this->num_geno; $i++){
+				$this->geno[$i] = rand($this->geno_range[$i][0], $this->geno_range[$i][1]);				
+			}
+		}else{
+			for ($i=0; $i<$this->num_geno; $i++){
+				//We manually set the value of initial genotype based on seed
+				//we are doing this to make our first population more stable and easy to solve
+				if ($i==2){
+					$this->geno[$i] = 0;	
+				}else if($i == 4){ // font
+					$this->geno[$i] = 3;
+				}else if($i == 6){
+					$this->geno[$i] = 22;
+				}else if($i == 9){
+						$this->geno[$i] = 0;
+				}else if($i == 11 || $i == 12){
+						$this->geno[$i] = 0;
+				}else if ($i >=16 && $i <=18){//background colors
+					if ($seed % 2 == 0) $this->geno[$i] = 255;
+					else $this->geno[$i] = 0;
+				}else if($i >=19 && $i <=21){//font colors
+					if($seed % 2 == 0) $this->geno[$i] = 0;
+					else $this->geno[$i] = 255;
+				}else{
+					//randomize the initial state
+					$this->geno[$i] = rand($this->geno_range[$i][0], $this->geno_range[$i][1]);
+				}
 			}
 		}
 	}
@@ -147,10 +152,14 @@ Class Population{
 	
 	//test flag must be off for deployment
 	private $test_flag = 1;
+	private $elitist_size = 200;
 	
 	private $username="root";
 	private $password="1234567";
 	private $database="captcha";
+	
+	//flag
+	private $mturk_multiple = 50;
 	
 	private $indivs = array();
 	private $offsprings = array();
@@ -259,8 +268,9 @@ Class Population{
 			if (!$results){
 				die('Invalid query 3: ' . mysql_error());
 			}
-			mysql_close();	
 		}
+		mysql_close();	
+
 	}
 	
 	public function extract_pop(){
@@ -328,6 +338,23 @@ Class Population{
 				array_push($this->offsprings, $mom, $dad);
 			}
 		}
+		
+		
+		//make array a multiple of 50
+		while (sizeof($this->offsprings) < $this->mturk_multiple){
+			$i = rand(0, sizeof($this->indivs)-1);
+			$j = rand(0, sizeof($this->indivs)-1);
+			$mom = clone $this->indivs[$i];
+			$dad = clone $this->indivs[$j];
+			$this->cross_over($mom,$dad);
+			array_push($this->offsprings, $mom, $dad);
+		}
+		
+		while (sizeof($this->offsprings) > $this->mturk_multiple){
+			unset($this->offsprings[rand(0,sizeof($this->offsprings)-1)]);
+			$this->offsprings = array_values($this->offsprings);
+		}
+		
 		
 		//$offsprings will now include all the offsprings
 		//we want to store it in our DB and send it for fitness evaluation
@@ -454,7 +481,7 @@ Class Population{
 				//$lev_mturk = ($lev_mturk > strlen($row["captcha_text"])) ? strlen($row["captcha_text"]) : $lev_mturk;
 				//$lev_antigate = ($lev_antigate > strlen($row["captcha_text"])) ? strlen($row["captcha_text"]) : $lev_antigate;
 				
-				echo("lev_mturk: ".$row['mturk_answer'].", lev_antigate: ".$row['antigate_answer'].", str: ".$row['captcha_text']." <br>\n\n");
+				//echo("lev_mturk: ".$row['mturk_answer'].", lev_antigate: ".$row['antigate_answer'].", str: ".$row['captcha_text']." <br>\n\n");
 				
 				//TODO: include solving speed into calculation		
 				//$avg_speed = $result["mturk_speed"]/strlen($result["captcha_text"]);
@@ -537,7 +564,7 @@ Class Population{
 		
 		//sort our elitist fitness array
 		arsort($efitness);
-		$result = array_slice($efitness, 0, 20, true);
+		$result = array_slice($efitness, 0, $this->elitist_size, true);
 		foreach($efitness as $key=>$value){
 			if (!array_key_exists($key, $result))
 				unset($elitist[$key]);
@@ -578,7 +605,7 @@ Class Population{
 		//delete all the captcha image files generated in he pervious run
 		$files = glob('./captcha/'.$subfolder.'/*'); // get all file names
 		foreach($files as $file){ // iterate files
-		  if(is_file($file))
+		  //if(is_file($file))
 		    unlink($file); // delete file
 		}
 		

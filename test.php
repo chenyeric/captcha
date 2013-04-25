@@ -4,39 +4,9 @@ include("ea_core.php");
 
 $ea = new EA_Core();
 $ea->clean();
-$ea->init(2,10,2,0.1,0.8,1, 2);
+$ea->init(3,1,2,0.1,0.5,1, 3);
 $ea->start();
-//	public function init($rate, $layer_num, $equil_size, $mut_rate, $cross_rate, $dying_rate, $max_age){
-
-/*
-$pop = new Population();
-$pop->init(20,0.1,0.1, 1, "layer_test");
-$pop->evolve();
-$pop->generate_image();
-
-$pop_1 = new Population();
-$pop_1->fill("layer_test");
-$pop_1->dump();
-$pop_1->evolve();
-$pop_1->dump();
-
-$pop_2 = new Population();
-$pop_2->fill("layer_test");
-$pop_2->cleanup();
-
-$pop_3 = new Population();
-$pop_3->fill("layer_test");
-$pop_3->dump();
-*/
+//	public function init($age_per_layer, $layer_num, $equil_size, $mut_rate, $cross_rate, $dying_rate, $max_age){
 
 
-/*$username="root";
-$password="1234567";
-$database="captcha";
-
-//create a new table for this population
-mysql_connect("localhost",$username,$password);
-@mysql_select_db($database) or die( "Unable to select database");
-$query = "CREATE TABLE "."test"."(id MEDIUMINT NOT NULL AUTO_INCREMENT, PRIMARY KEY (id), geno BLOB, gfitness DOUBLE, bfitness DOUBLE)";
-mysql_query($query);*/
 ?>

@@ -118,9 +118,10 @@ Class EA_Core{
 //echo "run() gets called with age: $this->current_age and ".sizeof($this->layers)." layers<br>\n";
 		//we will evolve and generate offspring/images for all layers
 		foreach($this->layers as $key=>$value){
-			$value->dump();
 			$value->evolve();
 			$value->generate_image((string)$key);
+			$value->dump();
+
 		}
 		
 		//first, clear the layer_ids array
@@ -129,6 +130,46 @@ Class EA_Core{
 		//then we put then up for evaluation on antigate, spin the loop until all images are solved
 		mysql_connect("localhost",$this->username,$this->password);
 		@mysql_select_db($this->database) or die( "Unable to select database");
+		
+		//antigate must be handled differently
+		foreach($this->layers as $key=>$value){
+			//first, we read all the captchas from the table
+			$query = "SELECT * from ".$value->get_table()."_antigate";
+			$result = mysql_query($query);
+			if (!$result) {
+			    echo "Could not successfully run query 15 ($query) from DB: " . mysql_error();
+			    exit;
+			}
+			
+			//allocate an array to store all the ids
+			$tmp_array = array();
+			array_push($this->layer_ids, $tmp_array);
+			
+			while($row = mysql_fetch_assoc($result)){
+				$id = $row["id"];
+				$text = $row["captcha_text"];
+				$file = $row["image_filename"];
+
+				$answer = recognize($file, "9e3a331523a35c307e5440d84204d704", true, "antigate.com");
+				//$answer = "antigate";
+				
+				//if one of the captcha is unsolvable
+				if (!$answer){
+					$answer = "";
+				}
+				
+				$answer = mysql_escape_string($answer);
+				
+				//write result back to db
+				$query = "UPDATE ".$value->get_table()."_antigate SET antigate_answer='$answer' WHERE id=".$id;
+				$ret = mysql_query($query);
+				if (!$ret){
+					die('Invalid query: ' . mysql_error());
+				}
+			}			
+		}
+		
+		//mturk
 		foreach($this->layers as $key=>$value){
 			//first, we read all the captchas from the table
 			$query = "SELECT * from ".$value->get_table()."_antigate";
@@ -151,7 +192,7 @@ Class EA_Core{
 				$ids = array(0,0,0);
 				$ids[0] = $id;
 				//$ids[1] = upload($file, "9e3a331523a35c307e5440d84204d704", true, "antigate.com");
-				$ids[2] = upload($file, "", true, "insecure.linshunghuang.com");
+				//$ids[2] = upload($file, "", true, "insecure.linshunghuang.com");
 				array_push($this->layer_ids[$key], $ids);				
 				
 				//pass the image to anti-gate
@@ -169,44 +210,36 @@ Class EA_Core{
 			
 			
 				//$result1 = query($file, $ids[1], "9e3a331523a35c307e5440d84204d704", true, "antigate.com", 10, 9999);
-				$result1 = "antigate";
-				$result2 = query($file, $ids[2], "", true, "insecure.linshunghuang.com", 20, 999999);
-				//$result2 = array("mturk", 12);
-				//echo " id: ".$ids[0]." Mturk id: ".$ids[2].", antigate id: ".$id[1]."<br>\n";
+				//$result1 = "antigate";
+				//$answer = query($file, $ids[2], "", true, "insecure.linshunghuang.com", 20, 999999);
 	
-				//if one of the captcha is unsolvable
-				if (!$result1){
-					$result1 = "~~~~~~~~~~";
-				}
-				if (!$result2){
-					$result2 = array("~~~~~~~~~~", -1);
+				$answer = array("mtrk", 100);
+	
+				if (!$answer){
+					$answer = array("", -1);
 				}
 				
-				$result1 = mysql_escape_string($result1);
-				$result2[0] = mysql_escape_string($result2[0]);
-				$result2[1] = mysql_escape_string($result2[1]);
+				$answer[0] = mysql_escape_string($answer[0]);
+				$answer[1] = mysql_escape_string($answer[1]);
 
 				
-				//write result back to db
-				$query = "UPDATE ".$this->layers[$layer_num]->get_table()."_antigate SET antigate_answer='$result1' WHERE id=".$ids[0];
+				
+				$query = "UPDATE ".$this->layers[$layer_num]->get_table()."_antigate SET mturk_answer='$answer[0]' WHERE id=".$ids[0];
 				$ret = mysql_query($query);
 				if (!$ret){
 					die('Invalid query: ' . mysql_error());
 				}
 				
-				$query = "UPDATE ".$this->layers[$layer_num]->get_table()."_antigate SET mturk_answer='$result2[0]' WHERE id=".$ids[0];
-				$ret = mysql_query($query);
-				if (!$ret){
-					die('Invalid query: ' . mysql_error());
-				}
-				
-				$query = "UPDATE ".$this->layers[$layer_num]->get_table()."_antigate SET mturk_speed=$result2[1] WHERE id=".$ids[0];
+				$query = "UPDATE ".$this->layers[$layer_num]->get_table()."_antigate SET mturk_speed=$answer[1] WHERE id=".$ids[0];
 				$ret = mysql_query($query);
 				if (!$ret){
 					die('Invalid query: ' . mysql_error());
 				}
 			}
 		}
+		
+		
+		
 		mysql_close();
 		
 		//then, we cleanup the population and go for another generation
