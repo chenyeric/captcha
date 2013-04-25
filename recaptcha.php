@@ -48,8 +48,61 @@ if ($handle = opendir('./'.$table)) {
     
     //we have all the files, now we ship
     foreach($mturk_arr as $key=>$value){
-        $value[3] = upload("./$table/$value[1].jpeg", "9e3a331523a35c307e5440d84204d704", true, "antigate.com");
+        //$value[3] = upload("./$table/$value[1].jpeg", "9e3a331523a35c307e5440d84204d704", true, "antigate.com");
     }
+    
+    $mturk_arr[0][3] = "152679189";
+    $mturk_arr[1][3] = "152679193";
+    $mturk_arr[2][3] = "152679200";
+    $mturk_arr[3][3] = "152679209";
+    $mturk_arr[4][3] = "152679212";
+    $mturk_arr[5][3] = "152679218";
+    $mturk_arr[6][3] = "152679225";
+    $mturk_arr[7][3] = "152679229";
+    $mturk_arr[8][3] = "152679232";
+    $mturk_arr[9][3] = "152679239";
+    $mturk_arr[10][3] = "152679242";
+    $mturk_arr[11][3] = "152679246";
+    $mturk_arr[12][3] = "152679251";
+    $mturk_arr[13][3] = "152679255";
+    $mturk_arr[14][3] = "152679261";
+    $mturk_arr[15][3] = "152679264";
+    $mturk_arr[16][3] = "152679271";
+    $mturk_arr[17][3] = "152679276";
+    $mturk_arr[18][3] = "152679280";
+    $mturk_arr[19][3] = "152679284";
+    $mturk_arr[20][3] = "152679289";
+    $mturk_arr[21][3] = "152679292";
+    $mturk_arr[22][3] = "152679295";
+    $mturk_arr[23][3] = "152679297";
+    $mturk_arr[24][3] = "152679300";
+    $mturk_arr[25][3] = "152679305";
+    $mturk_arr[26][3] = "152679310";
+    $mturk_arr[27][3] = "152679313";
+    $mturk_arr[28][3] = "152679317";
+    $mturk_arr[29][3] = "152679321";
+    $mturk_arr[30][3] = "152679324";
+    $mturk_arr[31][3] = "152679329";
+    $mturk_arr[32][3] = "152679331";
+    $mturk_arr[33][3] = "152679334";
+    $mturk_arr[34][3] = "152679337";
+    $mturk_arr[35][3] = "152679344";
+    $mturk_arr[36][3] = "152679347";
+    $mturk_arr[37][3] = "152679351";
+    $mturk_arr[38][3] = "152679356";
+    $mturk_arr[39][3] = "152679358";
+    $mturk_arr[40][3] = "152679362";
+    $mturk_arr[41][3] = "152679369";
+    $mturk_arr[42][3] = "152679373";
+    $mturk_arr[43][3] = "152679376";
+    $mturk_arr[44][3] = "152679379";
+    $mturk_arr[45][3] = "152679385";
+    $mturk_arr[46][3] = "152679390";
+    $mturk_arr[47][3] = "152679399";
+    $mturk_arr[48][3] = "152679402";
+    $mturk_arr[49][3] = "152679404";
+
+    
     
      foreach($mturk_arr as $key=>$value){
         $value[4] = query("./$table/$value[1].jpeg", $value[3],"9e3a331523a35c307e5440d84204d704", true, "antigate.com");
