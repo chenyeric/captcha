@@ -48,11 +48,11 @@ if ($handle = opendir('./'.$table)) {
     
     //we have all the files, now we ship
     foreach($mturk_arr as $key=>$value){
-        $value[3] = upload("./$table/$value[1].jpg", "9e3a331523a35c307e5440d84204d704", true, "antigate.com");
+        $value[3] = upload("./$table/$value[1].jpeg", "9e3a331523a35c307e5440d84204d704", true, "antigate.com");
     }
     
      foreach($mturk_arr as $key=>$value){
-        $value[4] = query("./$table/$value[1].jpg", $value[3],"9e3a331523a35c307e5440d84204d704", true, "antigate.com");
+        $value[4] = query("./$table/$value[1].jpeg", $value[3],"9e3a331523a35c307e5440d84204d704", true, "antigate.com");
         
         if (!$value[4]){
             $value[4] = "~~~~~~~~~~";
