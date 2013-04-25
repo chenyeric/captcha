@@ -182,9 +182,9 @@ Class EA_Core{
 					$result2 = array("~~~~~~~~~~", -1);
 				}
 				
-				$result1 = mysql_real_escape_string($result1);
-				$result2[0] = mysql_real_escape_string($result2[0]);
-				$result2[1] = mysql_real_escape_string($result2[1]);
+				$result1 = mysql_escape_string($result1);
+				$result2[0] = mysql_escape_string($result2[0]);
+				$result2[1] = mysql_escape_string($result2[1]);
 
 				
 				//write result back to db

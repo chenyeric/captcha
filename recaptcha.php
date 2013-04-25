@@ -28,20 +28,78 @@ if ($handle = opendir('./'.$table)) {
         }
     }
     
+    mysql_connect("localhost",$username,$password);
+    @mysql_select_db($database) or die( "Unable to select database");
+    //we also want to write population properties into the DB
+    //store the properties of the population
+    $query = "SELECT * from ".$table;
+    
+    $results = mysql_query($query);
+    if (!$results){
+        die('Invalid query: ' . mysql_error());
+    }
+    
+    $mturk_arr = array();
+    while ($row = mysql_fetch_assoc($results)){
+        $tmp=array($row["id"], $row["text"], $row["mturk"], 0, "");
+        array_push($mturk_arr,$tmp);
+    }
+    mysql_close();
+    
+    //we have all the files, now we ship
+    foreach($mturk_arr as $key=>$value){
+        $value[3] = upload("./$table/$value[1].jpg", "9e3a331523a35c307e5440d84204d704", true, "antigate.com");
+    }
+    
+     foreach($mturk_arr as $key=>$value){
+        $value[4] = query("./$table/$value[1].jpg", $value[3],"9e3a331523a35c307e5440d84204d704", true, "antigate.com");
+        
+        if (!$value[4]){
+            $value[4] = "~~~~~~~~~~";
+        }
+        
+        $value[4] = mysql_escape_string($value[4]);
+        $fitness = levenshtein(strtolower($value[2]), strtolower($value[4]));
+        
+        mysql_connect("localhost",$username,$password);
+        @mysql_select_db($database) or die( "Unable to select database");
+        
+		$query = "UPDATE $table SET antigate='$value[4]' WHERE id=$value[0]";
+        
+        $result = mysql_query($query);
+        if (!$result) {
+            echo "Could not successfully run query ($query) from DB: " . mysql_error();
+            exit;
+        }
+        
+        $query = "UPDATE $table SET fitness=$fitness WHERE id=$value[0]";
+        
+        $result = mysql_query($query);
+        if (!$result) {
+            echo "Could not successfully run query ($query) from DB: " . mysql_error();
+            exit;
+        }
+
+        
+        mysql_close();
+
+    }
+    
+    /*
     //we have all the files, now we ship
     foreach($files as $key=>$file){
         $tmp = array(0,0);
-        //$tmp[0] = upload($file[0], "9e3a331523a35c307e5440d84204d704", true, "antigate.com");
-        $tmp[1] = upload($file[0], "", true, "insecure.linshunghuang.com");
+        $tmp[0] = upload($file[0], "9e3a331523a35c307e5440d84204d704", true, "antigate.com");
+        //$tmp[1] = upload($file[0], "", true, "insecure.linshunghuang.com");
         
         array_push($ids, $tmp);
     }
     
     
     foreach($ids as $key=>$id){
-        //$result1 = query($files[$key][0], $id[0], "9e3a331523a35c307e5440d84204d704", true, "antigate.com");
-		$result1 = "antigate";
-		$result2 = query($files[$key][0], $id[1], "", true, "insecure.linshunghuang.com",2,999999);
+        $result1 = query($files[$key][0], $id[0], "9e3a331523a35c307e5440d84204d704", true, "antigate.com");
+		//$result1 = "antigate";
+		//$result2 = query($files[$key][0], $id[1], "", true, "insecure.linshunghuang.com",10,999999);
         
         if (!$result1){
             $result1 = "~~~~~~~~~~";
@@ -55,7 +113,7 @@ if ($handle = opendir('./'.$table)) {
         $result2[0] = mysql_escape_string($result2[0]);
         $result2[1] = mysql_escape_string($result2[1]);
                 
-        $fitness = levenshtein($result1, $result2[0]);
+        $fitness = levenshtein(strtolower($result1), strtolower($result2[0]));
         
         mysql_connect("localhost",$username,$password);
         @mysql_select_db($database) or die( "Unable to select database");
@@ -72,7 +130,7 @@ if ($handle = opendir('./'.$table)) {
         mysql_close();
     }
     
-    
+    */
     
 
     closedir($handle);

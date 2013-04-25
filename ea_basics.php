@@ -251,7 +251,7 @@ Class Population{
 		
 		//store the population into the DB and send it for fitness evaluation
 		foreach($this->indivs as $ele){
-			$str_ele = mysql_real_escape_string(serialize($ele));
+			$str_ele = mysql_escape_string(serialize($ele));
 			$query = "INSERT INTO ".$this->table." (geno) VALUE ('".$str_ele."')";
 			//echo($query);
 			$results = mysql_query($query, $handle);
@@ -352,7 +352,7 @@ Class Population{
 		foreach($arr as $k=>$ele){
 			//check if we are inserting to the elite db
 			if($table == "elitist"){
-				$str_ele = mysql_real_escape_string(serialize($ele));
+				$str_ele = mysql_escape_string(serialize($ele));
 				$query = "INSERT INTO $table (geno, fitness) VALUE ('$str_ele', $fitness[$k])";
 				$results = mysql_query($query, $handle);
 
@@ -360,7 +360,7 @@ Class Population{
 					die('Invalid query 5: ' . mysql_error());
 				}
 			}else{
-				$str_ele = mysql_real_escape_string(serialize($ele));
+				$str_ele = mysql_escape_string(serialize($ele));
 				$query = "INSERT INTO $table (geno) VALUE ('$str_ele')";
 				$results = mysql_query($query, $handle);
 
@@ -706,7 +706,7 @@ Class Population{
 				"(id MEDIUMINT NOT NULL AUTO_INCREMENT, PRIMARY KEY (id), geno_id MEDIUMINT, captcha_text VARCHAR(30), image_filename VARCHAR(20), antigate_answer VARCHAR(30), mturk_answer VARCHAR(30), mturk_speed INT)";
 			mysql_query($query);
 			
-			$safe_img_name = mysql_real_escape_string($image_name_1);
+			$safe_img_name = mysql_escape_string($image_name_1);
 			$query = "INSERT INTO $this->table"."_antigate"." (geno_id, captcha_text, image_filename) VALUE ($key, '$text1','$safe_img_name')";
 			$result = mysql_query($query);
 			if (!$result) {
@@ -714,7 +714,7 @@ Class Population{
 			    exit;
 			}
 			
-			$safe_img_name = mysql_real_escape_string($image_name_2);
+			$safe_img_name = mysql_escape_string($image_name_2);
 			$query = "INSERT INTO $this->table"."_antigate"." (geno_id, captcha_text, image_filename) VALUE ($key, '$text2','$safe_img_name')";
 			$result = mysql_query($query);
 			if (!$result) {
