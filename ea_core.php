@@ -179,10 +179,6 @@ Class EA_Core{
 			    exit;
 			}
 			
-			//allocate an array to store all the ids
-			$tmp_array = array();
-			array_push($this->layer_ids, $tmp_array);
-			
 			while($row = mysql_fetch_assoc($result)){
 				$id = $row["id"];
 				$text = $row["captcha_text"];

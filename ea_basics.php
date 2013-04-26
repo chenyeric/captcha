@@ -83,7 +83,7 @@ Class Individual{
 	
 	public function init($seed){
 		$this->num_geno = sizeof($this->geno);
-		if ($seed%10 ==0){
+		if ($seed%15 ==0){
 			for ($i=0; $i<$this->num_geno; $i++){
 				$this->geno[$i] = rand($this->geno_range[$i][0], $this->geno_range[$i][1]);				
 			}

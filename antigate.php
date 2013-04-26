@@ -29,14 +29,16 @@ function upload($filename,
 		$apikey,
 		$is_verbose = true,
 		$sendhost = "antigate.com",
-		$rtimeout = 5,
-		$mtimeout = 99999,
+		$rtimeout = 20,
+		$mtimeout = 999999,
 		$is_phrase = 0,
 		$is_regsense = 0,
 		$is_numeric = 0,
 		$min_len = 0,
 		$max_len = 0,
 		$is_russian = 0){
+	
+
 	if (!file_exists($filename))
 	{
 		if ($is_verbose) echo "file $filename not found\n";
@@ -155,8 +157,8 @@ function query($filename,
 		$apikey,
 		$is_verbose = true,
 		$sendhost = "antigate.com",
-		$rtimeout = 5,
-		$mtimeout = 120,
+		$rtimeout = 20,
+		$mtimeout = 999999,
 		$is_phrase = 0,
 		$is_regsense = 0,
 		$is_numeric = 0,
@@ -164,6 +166,7 @@ function query($filename,
 		$max_len = 0,
 		$is_russian = 0){
 	
+
 	while(true)
 	{
 		echo "captcha id: $captcha_id\n";
@@ -218,6 +221,7 @@ function recognize(
 		$max_len = 0,
 		$is_russian = 0)
 {
+	
 	if (!file_exists($filename))
 	{
 		if ($is_verbose) echo "file $filename not found\n";
