@@ -37,7 +37,8 @@ function upload($filename,
 		$min_len = 0,
 		$max_len = 0,
 		$is_russian = 0){
-	
+	//echo "upload to $sendhost with file $filename\n";
+	//return $filename;
 
 	if (!file_exists($filename))
 	{
@@ -166,6 +167,8 @@ function query($filename,
 		$max_len = 0,
 		$is_russian = 0){
 	
+	//echo "query host $sendhost with id $captcha_id\n";
+	//return array("m t u r k",100);
 
 	while(true)
 	{
@@ -221,6 +224,8 @@ function recognize(
 		$max_len = 0,
 		$is_russian = 0)
 {
+	//echo "recognize host $sendhost, file: $filename\n";
+	//return " a n t i g a t e";
 	
 	if (!file_exists($filename))
 	{

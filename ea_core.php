@@ -190,7 +190,10 @@ Class EA_Core{
 				//if one of the captcha is unsolvable
 				if (!$answer){
 					$answer = "";
+				}else{
+					$answer = preg_replace('/\s+/', '' , $answer);
 				}
+				echo "$answer\n";
 				
 				$answer = mysql_escape_string($answer);
 				
@@ -217,8 +220,12 @@ Class EA_Core{
 	
 				if (!$answer){
 					$answer = array("", -1);
+				}else{
+					$answer[0] = preg_replace('/\s+/', '' , $answer[0]);
+
 				}
-				
+				echo "$answer[0]\n";
+
 				$answer[0] = mysql_escape_string($answer[0]);
 				$answer[1] = mysql_escape_string($answer[1]);
 
