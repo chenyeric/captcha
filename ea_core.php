@@ -192,7 +192,7 @@ Class EA_Core{
 				$ids = array(0,0,0);
 				$ids[0] = $id;
 				//$ids[1] = upload($file, "9e3a331523a35c307e5440d84204d704", true, "antigate.com");
-				//$ids[2] = upload($file, "", true, "insecure.linshunghuang.com");
+				$ids[2] = upload($file, "", true, "insecure.linshunghuang.com");
 				array_push($this->layer_ids[$key], $ids);				
 				
 				//pass the image to anti-gate
@@ -211,9 +211,9 @@ Class EA_Core{
 			
 				//$result1 = query($file, $ids[1], "9e3a331523a35c307e5440d84204d704", true, "antigate.com", 10, 9999);
 				//$result1 = "antigate";
-				//$answer = query($file, $ids[2], "", true, "insecure.linshunghuang.com", 20, 999999);
+				$answer = query($file, $ids[2], "", true, "insecure.linshunghuang.com", 20, 999999);
 	
-				$answer = array("mtrk", 100);
+				//$answer = array("mtrk", 100);
 	
 				if (!$answer){
 					$answer = array("", -1);
