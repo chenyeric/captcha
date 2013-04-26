@@ -131,6 +131,42 @@ Class EA_Core{
 		mysql_connect("localhost",$this->username,$this->password);
 		@mysql_select_db($this->database) or die( "Unable to select database");
 		
+		
+		
+		//mturk
+		foreach($this->layers as $key=>$value){
+			//first, we read all the captchas from the table
+			$query = "SELECT * from ".$value->get_table()."_antigate";
+			$result = mysql_query($query);
+			if (!$result) {
+			    echo "Could not successfully run query 11 ($query) from DB: " . mysql_error();
+			    exit;
+			}
+			
+			//allocate an array to store all the ids
+			$tmp_array = array();
+			array_push($this->layer_ids, $tmp_array);
+			
+			while($row = mysql_fetch_assoc($result)){
+				$id = $row["id"];
+				$text = $row["captcha_text"];
+				$file = $row["image_filename"];
+				//echo "image $file has the text $text <br>\n";
+				
+				$ids = array(0,0,0);
+				$ids[0] = $id;
+				//$ids[1] = upload($file, "9e3a331523a35c307e5440d84204d704", true, "antigate.com");
+				$ids[2] = upload($file, "", true, "insecure.linshunghuang.com");
+				array_push($this->layer_ids[$key], $ids);				
+				
+				//pass the image to anti-gate
+				//$user_output = "test";//dummy
+				//function recognize($filename,$apikey,$is_verbose = true,$sendhost = "antigate.com",$rtimeout = 5,$mtimeout = 120, $is_phrase = 0, $is_regsense = 0, $is_numeric = 0, $min_len = 0, $max_len = 0, $is_russian = 0)
+				//$user_output = recognize($file,"9e3a331523a35c307e5440d84204d704",true,"antigate.com");
+				
+			}			
+		}
+		
 		//antigate must be handled differently
 		foreach($this->layers as $key=>$value){
 			//first, we read all the captchas from the table
@@ -168,40 +204,6 @@ Class EA_Core{
 				}
 			}			
 		}
-		
-		//mturk
-		foreach($this->layers as $key=>$value){
-			//first, we read all the captchas from the table
-			$query = "SELECT * from ".$value->get_table()."_antigate";
-			$result = mysql_query($query);
-			if (!$result) {
-			    echo "Could not successfully run query 11 ($query) from DB: " . mysql_error();
-			    exit;
-			}
-			
-			//allocate an array to store all the ids
-			$tmp_array = array();
-			array_push($this->layer_ids, $tmp_array);
-			
-			while($row = mysql_fetch_assoc($result)){
-				$id = $row["id"];
-				$text = $row["captcha_text"];
-				$file = $row["image_filename"];
-				//echo "image $file has the text $text <br>\n";
-				
-				$ids = array(0,0,0);
-				$ids[0] = $id;
-				//$ids[1] = upload($file, "9e3a331523a35c307e5440d84204d704", true, "antigate.com");
-				$ids[2] = upload($file, "", true, "insecure.linshunghuang.com");
-				array_push($this->layer_ids[$key], $ids);				
-				
-				//pass the image to anti-gate
-				//$user_output = "test";//dummy
-				//function recognize($filename,$apikey,$is_verbose = true,$sendhost = "antigate.com",$rtimeout = 5,$mtimeout = 120, $is_phrase = 0, $is_regsense = 0, $is_numeric = 0, $min_len = 0, $max_len = 0, $is_russian = 0)
-				//$user_output = recognize($file,"9e3a331523a35c307e5440d84204d704",true,"antigate.com");
-				
-			}			
-		}		
 	
 		//spin the loop until all images are solved
 		foreach($this->layer_ids as $layer_num=>$layer_id){
