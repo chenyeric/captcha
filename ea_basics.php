@@ -159,7 +159,7 @@ Class Population{
 	private $database="captcha";
 	
 	//flag
-	private $mturk_multiple = 2;
+	private $mturk_multiple = 50;
 	
 	private $indivs = array();
 	private $offsprings = array();
