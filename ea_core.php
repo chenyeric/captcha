@@ -167,7 +167,7 @@ Class EA_Core{
 			}			
 		}
 		
-		/*
+		
 		
 		//antigate must be handled differently
 		foreach($this->layers as $key=>$value){
@@ -205,7 +205,7 @@ Class EA_Core{
 					die('Invalid query: ' . mysql_error());
 				}
 			}			
-		}*/
+		}
 	
 		//spin the loop until all images are solved
 		foreach($this->layer_ids as $layer_num=>$layer_id){
