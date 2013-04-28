@@ -143,6 +143,9 @@ Class EA_Core{
 			    exit;
 			}
 			
+			
+			echo "querying for layer $key\n";
+			
 			//allocate an array to store all the ids
 			$tmp_array = array();
 			array_push($this->layer_ids, $tmp_array);
@@ -164,13 +167,9 @@ Class EA_Core{
 				//function recognize($filename,$apikey,$is_verbose = true,$sendhost = "antigate.com",$rtimeout = 5,$mtimeout = 120, $is_phrase = 0, $is_regsense = 0, $is_numeric = 0, $min_len = 0, $max_len = 0, $is_russian = 0)
 				//$user_output = recognize($file,"9e3a331523a35c307e5440d84204d704",true,"antigate.com");
 				
-			}			
-		}
-		
-		
-		
-		//antigate must be handled differently
-		foreach($this->layers as $key=>$value){
+			}
+			
+			//antigate must be handled differently
 			//first, we read all the captchas from the table
 			$query = "SELECT * from ".$value->get_table()."_antigate";
 			$result = mysql_query($query);
@@ -193,7 +192,7 @@ Class EA_Core{
 				}else{
 					$answer = preg_replace('/\s+/', '' , $answer);
 				}
-				echo "$answer\n";
+				//echo "$answer\n";
 				
 				$answer = mysql_escape_string($answer);
 				
@@ -203,13 +202,12 @@ Class EA_Core{
 				if (!$ret){
 					die('Invalid query: ' . mysql_error());
 				}
-			}			
-		}
-	
-		//spin the loop until all images are solved
-		foreach($this->layer_ids as $layer_num=>$layer_id){
+			}
 			
-			foreach($layer_id as $key=>$ids) {
+			
+			//spin the loop until all images are solved
+			echo "layer: $key has ".sizeof($this->layer_ids[$key])."pictures\n";
+			foreach($this->layer_ids[$key] as $i=>$ids) {
 			
 			
 				//$result1 = query($file, $ids[1], "9e3a331523a35c307e5440d84204d704", true, "antigate.com", 10, 9999);
@@ -224,26 +222,39 @@ Class EA_Core{
 					$answer[0] = preg_replace('/\s+/', '' , $answer[0]);
 
 				}
-				echo "$answer[0]\n";
+				//echo "$answer[0]\n";
 
 				$answer[0] = mysql_escape_string($answer[0]);
 				$answer[1] = mysql_escape_string($answer[1]);
 
 				
 				
-				$query = "UPDATE ".$this->layers[$layer_num]->get_table()."_antigate SET mturk_answer='$answer[0]' WHERE id=".$ids[0];
+				$query = "UPDATE ".$this->layers[$key]->get_table()."_antigate SET mturk_answer='$answer[0]' WHERE id=".$ids[0];
 				$ret = mysql_query($query);
 				if (!$ret){
 					die('Invalid query: ' . mysql_error());
 				}
 				
-				$query = "UPDATE ".$this->layers[$layer_num]->get_table()."_antigate SET mturk_speed=$answer[1] WHERE id=".$ids[0];
+				$query = "UPDATE ".$this->layers[$key]->get_table()."_antigate SET mturk_speed=$answer[1] WHERE id=".$ids[0];
 				$ret = mysql_query($query);
 				if (!$ret){
 					die('Invalid query: ' . mysql_error());
 				}
 			}
+			
 		}
+		
+		
+		/*
+		foreach($this->layers as $key=>$value){
+			
+						
+		}
+	
+		foreach($this->layer_ids as $layer_num=>$layer_id){
+			
+			
+		}*/
 		
 		
 		

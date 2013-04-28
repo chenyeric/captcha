@@ -83,36 +83,32 @@ Class Individual{
 	
 	public function init($seed){
 		$this->num_geno = sizeof($this->geno);
-		if ($seed%15 ==0){
-			for ($i=0; $i<$this->num_geno; $i++){
-				$this->geno[$i] = rand($this->geno_range[$i][0], $this->geno_range[$i][1]);				
-			}
-		}else{
-			for ($i=0; $i<$this->num_geno; $i++){
-				//We manually set the value of initial genotype based on seed
-				//we are doing this to make our first population more stable and easy to solve
-				if ($i==2){
-					$this->geno[$i] = 0;	
-				}else if($i == 4){ // font
-					$this->geno[$i] = 3;
-				}else if($i == 6){
-					$this->geno[$i] = 22;
-				}else if($i == 9){
-						$this->geno[$i] = 0;
-				}else if($i == 11 || $i == 12){
-						$this->geno[$i] = 0;
-				}else if ($i >=16 && $i <=18){//background colors
-					if ($seed % 2 == 0) $this->geno[$i] = 255;
-					else $this->geno[$i] = 0;
-				}else if($i >=19 && $i <=21){//font colors
-					if($seed % 2 == 0) $this->geno[$i] = 0;
-					else $this->geno[$i] = 255;
-				}else{
-					//randomize the initial state
-					$this->geno[$i] = rand($this->geno_range[$i][0], $this->geno_range[$i][1]);
-				}
+		
+		for ($i=0; $i<$this->num_geno; $i++){
+			//We manually set the value of initial genotype based on seed
+			//we are doing this to make our first population more stable and easy to solve
+			if ($i==2){
+				$this->geno[$i] = 0;	
+			}else if($i == 4){ // font
+				$this->geno[$i] = 3;
+			}else if($i == 6){
+				$this->geno[$i] = 22;
+			}else if($i == 9){
+					$this->geno[$i] = rand(0,30);
+			}else if($i == 11 || $i == 12){
+					$this->geno[$i] = 0;
+			}else if ($i >=16 && $i <=18){//background colors
+				if ($seed % 2 == 0) $this->geno[$i] = 255;
+				else $this->geno[$i] = 0;
+			}else if($i >=19 && $i <=21){//font colors
+				if($seed % 2 == 0) $this->geno[$i] = 0;
+				else $this->geno[$i] = 255;
+			}else{
+				//randomize the initial state
+				$this->geno[$i] = rand($this->geno_range[$i][0], $this->geno_range[$i][1]);
 			}
 		}
+		
 	}
 	
 	public function getSize(){
@@ -152,7 +148,7 @@ Class Population{
 	
 	//test flag must be off for deployment
 	private $test_flag = 1;
-	private $elitist_size = 200;
+	private $elitist_size = 300;
 	
 	private $username="root";
 	private $password="1234567";
@@ -490,6 +486,13 @@ Class Population{
 				//if ($fit<0)$fit =0;
 				
 				$fit = levenshtein(strtolower($row["mturk_answer"]), strtolower($row["antigate_answer"]));
+				
+				if((levenshtein(strtolower($row["mturk_answer"]), strtolower($row["captcha_text"])) == 0 &&
+				   levenshtein(strtolower($row["antigate_answer"]), strtolower($row["captcha_text"])) > 0) ||
+				   (levenshtein(strtolower($row["antigate_answer"]), strtolower($row["captcha_text"])) == 0 &&
+				   levenshtein(strtolower($row["mturk_answer"]), strtolower($row["captcha_text"])) > 0)){
+					$fit+=2;
+				}
 				
 				array_push($acc_fitness, $fit);
 			}
