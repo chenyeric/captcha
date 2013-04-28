@@ -127,14 +127,11 @@ Class EA_Core{
 		//first, clear the layer_ids array
 		$this->layer_ids = array();
 		
-		//then we put then up for evaluation on antigate, spin the loop until all images are solved
-		mysql_connect("localhost",$this->username,$this->password);
-		@mysql_select_db($this->database) or die( "Unable to select database");
-		
-		
-		
 		//mturk
 		foreach($this->layers as $key=>$value){
+			mysql_connect("localhost",$this->username,$this->password);
+			@mysql_select_db($this->database) or die( "Unable to select database");
+			
 			//first, we read all the captchas from the table
 			$query = "SELECT * from ".$value->get_table()."_antigate";
 			$result = mysql_query($query);
@@ -143,6 +140,7 @@ Class EA_Core{
 			    exit;
 			}
 			
+			mysql_close();
 			
 			echo "querying for layer $key\n";
 			
@@ -171,12 +169,16 @@ Class EA_Core{
 			
 			//antigate must be handled differently
 			//first, we read all the captchas from the table
+			mysql_connect("localhost",$this->username,$this->password);
+			@mysql_select_db($this->database) or die( "Unable to select database");
 			$query = "SELECT * from ".$value->get_table()."_antigate";
 			$result = mysql_query($query);
 			if (!$result) {
 			    echo "Could not successfully run query 15 ($query) from DB: " . mysql_error();
 			    exit;
 			}
+			mysql_close();
+
 			
 			while($row = mysql_fetch_assoc($result)){
 				$id = $row["id"];
@@ -197,12 +199,17 @@ Class EA_Core{
 				$answer = mysql_escape_string($answer);
 				
 				//write result back to db
+				mysql_connect("localhost",$this->username,$this->password);
+				@mysql_select_db($this->database) or die( "Unable to select database");
 				$query = "UPDATE ".$value->get_table()."_antigate SET antigate_answer='$answer' WHERE id=".$id;
 				$ret = mysql_query($query);
 				if (!$ret){
 					die('Invalid query: ' . mysql_error());
 				}
+				mysql_close();
+
 			}
+			
 			
 			
 			//spin the loop until all images are solved
@@ -228,7 +235,8 @@ Class EA_Core{
 				$answer[1] = mysql_escape_string($answer[1]);
 
 				
-				
+				mysql_connect("localhost",$this->username,$this->password);
+				@mysql_select_db($this->database) or die( "Unable to select database");
 				$query = "UPDATE ".$this->layers[$key]->get_table()."_antigate SET mturk_answer='$answer[0]' WHERE id=".$ids[0];
 				$ret = mysql_query($query);
 				if (!$ret){
@@ -240,6 +248,8 @@ Class EA_Core{
 				if (!$ret){
 					die('Invalid query: ' . mysql_error());
 				}
+				mysql_close();
+
 			}
 			
 		}
@@ -256,10 +266,7 @@ Class EA_Core{
 			
 		}*/
 		
-		
-		
-		mysql_close();
-		
+				
 		//then, we cleanup the population and go for another generation
 		foreach($this->layers as $key=>$pop){
 			$pop->fill($pop->get_table());
