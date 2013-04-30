@@ -45,7 +45,7 @@ Class Individual{
 		Array(0,1),		//3- Create cryptograms "easy to read" (true / false) // Alternatively compounds consonants and vowels.
 		Array(0,6), 	//4- font: 0-6
 		Array(6, 6),	//5- # of chars
-		Array(17,22),    //6-  Space between characters (in pixels)
+		Array(10,22),    //6-  Space between characters (in pixels)
 		Array(8,16),   //7-  min font size
 		Array(16,22),   //8- max font size
 		Array(0, 90),	//9- max angle of rotation
@@ -79,6 +79,10 @@ Class Individual{
 		$new_arr = array();
 		array_push($new_arr, $text, $mturk, $antigate);
 		array_push($this->answers, $new_arr);
+	}
+	
+	public function getAnswers(){
+		return $this->answers;
 	}
 	
 	public function init($seed){
