@@ -60,7 +60,8 @@ Class EA_Core{
 						 "drop table if exists layer2_antigate",
 						 "drop table if exists layer3_antigate",
 						 "drop table if exists layer4_antigate",
-						 "drop table if exists elitist");
+						 "drop table if exists elitist",
+						 "drop table if exists run");
 		
 		foreach($queries as $query){
 			$result = mysql_query($query);
@@ -254,25 +255,38 @@ Class EA_Core{
 			
 		}
 		
-		
-		/*
-		foreach($this->layers as $key=>$value){
-			
-						
-		}
-	
-		foreach($this->layer_ids as $layer_num=>$layer_id){
-			
-			
-		}*/
-		
+		$avg_fitness_arr = array();
+		$max_fitness = 0;
+		$types= array(0,0,0,0);
 				
 		//then, we cleanup the population and go for another generation
 		foreach($this->layers as $key=>$pop){
 			$pop->fill($pop->get_table());
 			$pop->evaluate($key);
 			$pop->fill($pop->get_table());
+			
+			//store information about this run
+			array_push($avg_fitness_arr, $pop->getAvgFit());
+			$max_fitness = ($pop->getMaxFit() > $max_fitness) ? $pop->getMaxFit() : $max_fitness;
+			
+			$tmp_types = $pop->getTypes();
+			$types[0] += $tmp_types[0];
+			$types[1] += $tmp_types[1];
+			$types[2] += $tmp_types[2];
+			$types[3] += $tmp_types[3];
 		}
+		
+		$avg_fitness = array_sum($avg_fitness_arr)/sizeof($avg_fitness_arr);
+		
+		
+		mysql_connect("localhost",$this->username,$this->password);
+		@mysql_select_db($this->database) or die( "Unable to select database");
+		$query = "INSERT INTO run (average_fit, max_fit, type1, type2, type3, type4) VALUE ($avg_fitness, $max_fitness, $types[0], $types[1], $types[2], $types[3])";
+		mysql_query($query);
+		mysql_close();
+
+		//"CREATE TABLE IF NOT EXISTS run(id MEDIUMINT NOT NULL AUTO_INCREMENT, PRIMARY KEY (id), average_fit FLOAT, max_fit FLOAT, type1 INT, type2 INT, type3 INT, type4 INT)";
+
 		
 	}
 	

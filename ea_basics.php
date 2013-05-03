@@ -158,6 +158,15 @@ Class Population{
 	private $password="1234567";
 	private $database="captcha";
 	
+	//type1 = both right
+	//type2 = antigate right, mturk wrong
+	//type3 = antigate wrong, mturk right
+	//type4 = both wrong
+	private $types = array(0,0,0,0);
+	
+	private $average_fit;
+	private $max_fit;
+	
 	//flag
 	private $mturk_multiple = 25;
 	
@@ -191,6 +200,18 @@ Class Population{
 		$temp_val = $ind_1->getGene($rand_index);
 		$ind_1->setGene($rand_index, $ind_2->getGene($rand_index));
 		$ind_2->setGene($rand_index, $temp_val);
+	}
+	
+	public function getTypes(){
+		return $this->types;
+	}
+	
+	public function getAvgFit(){
+		return $this->average_fit;
+	}
+	
+	public function getMaxFit(){
+		return $this->max_fit;
 	}
 	
 	public function dump(){
@@ -236,6 +257,13 @@ Class Population{
 		mysql_connect("localhost",$this->username,$this->password);
 		@mysql_select_db($this->database) or die( "Unable to select database");
 		$query = "CREATE TABLE IF NOT EXISTS elitist(id MEDIUMINT NOT NULL AUTO_INCREMENT, PRIMARY KEY (id), geno BLOB, fitness int)";
+		mysql_query($query);
+		mysql_close();
+		
+		//create the "run" table
+		mysql_connect("localhost",$this->username,$this->password);
+		@mysql_select_db($this->database) or die( "Unable to select database");
+		$query = "CREATE TABLE IF NOT EXISTS run(id MEDIUMINT NOT NULL AUTO_INCREMENT, PRIMARY KEY (id), average_fit FLOAT, max_fit FLOAT, type1 INT, type2 INT, type3 INT, type4 INT)";
 		mysql_query($query);
 		mysql_close();
 	}
@@ -455,6 +483,8 @@ Class Population{
 	public function calculate_fitness(){
 		//empty fitness array		
 		$this->fitness = array();
+		$this->types = array(0,0,0,0);
+		$best_fitness = 0;
 		
 		mysql_connect("localhost",$this->username,$this->password);
 		@mysql_select_db($this->database) or die( "Unable to select database");
@@ -470,42 +500,63 @@ Class Population{
 			}
 			
 			$acc_fitness = array();
+			$acc_answer = array();
 			while($row = mysql_fetch_assoc($result)){
 				
 				//first, add the user study info to our indivs
 				$indiv->addAnswers($row['captcha_text'], $row['mturk_answer'], $row['antigate_answer']);
 				
-				//$lev_mturk = levenshtein(strtolower($row["captcha_text"]), strtolower($row["mturk_answer"]));
-				//$lev_antigate = levenshtein(strtolower($row["captcha_text"]), strtolower($row["antigate_answer"]));
-				
-				//$lev_mturk = ($lev_mturk > strlen($row["captcha_text"])) ? strlen($row["captcha_text"]) : $lev_mturk;
-				//$lev_antigate = ($lev_antigate > strlen($row["captcha_text"])) ? strlen($row["captcha_text"]) : $lev_antigate;
-				
-				//echo("lev_mturk: ".$row['mturk_answer'].", lev_antigate: ".$row['antigate_answer'].", str: ".$row['captcha_text']." <br>\n\n");
-				
-				//TODO: include solving speed into calculation		
-				//$avg_speed = $result["mturk_speed"]/strlen($result["captcha_text"]);
-				
-				//$fit = ($lev_antigate-$lev_mturk)/strlen($row["captcha_text"]);
-				//if ($fit<0)$fit =0;
+				//first element is Mturk, second element is antigate
+				$tmp_arr = array();
+				array_push($tmp_arr, strtolower($row['mturk_answer']), strtolower($row['antigate_answer']), strtolower($row['captcha_text']));
+				array_push($acc_answer, $tmp_arr);
 				
 				$fit = levenshtein(strtolower($row["mturk_answer"]), strtolower($row["antigate_answer"]));
-				
-				if((levenshtein(strtolower($row["mturk_answer"]), strtolower($row["captcha_text"])) == 0 &&
-				   levenshtein(strtolower($row["antigate_answer"]), strtolower($row["captcha_text"])) > 0) ||
-				   (levenshtein(strtolower($row["antigate_answer"]), strtolower($row["captcha_text"])) == 0 &&
-				   levenshtein(strtolower($row["mturk_answer"]), strtolower($row["captcha_text"])) > 0)){
-					$fit+=2;
-				}
-				
 				array_push($acc_fitness, $fit);
+				
+				//record the diff types of answers we get
+				if (levenshtein(strtolower($row["mturk_answer"]), strtolower($row["captcha_text"]))== 0 &&
+					levenshtein(strtolower($row["antigate_answer"]), strtolower($row["captcha_text"])) ==0 ){
+					$this->types[0]++;
+				}elseif(levenshtein(strtolower($row["mturk_answer"]), strtolower($row["captcha_text"])) > 0 &&
+					levenshtein(strtolower($row["antigate_answer"]), strtolower($row["captcha_text"])) ==0 ){
+					$this->types[1]++;
+				}elseif(levenshtein(strtolower($row["mturk_answer"]), strtolower($row["captcha_text"])) == 0 &&
+					levenshtein(strtolower($row["antigate_answer"]), strtolower($row["captcha_text"])) > 0 ){
+					$this->types[2]++;
+				}elseif(levenshtein(strtolower($row["mturk_answer"]), strtolower($row["captcha_text"])) > 0 &&
+					levenshtein(strtolower($row["antigate_answer"]), strtolower($row["captcha_text"])) > 0 ){
+					$this->types[3]++;
+				}
 			}
-			//average multiple runs to get the average fitness
-			$cur_fitness = array_sum($acc_fitness)/sizeof($acc_fitness);
+			
+			$average_fit = array_sum($acc_fitness)/sizeof($acc_fitness);
+			$consistency = 1 + levenshtein($acc_answer[0][0], $acc_answer[1][0]) +
+							levenshtein($acc_answer[0][1], $acc_answer[1][1]);
+			
+			$ease_factor = 1.0;
+			if ((levenshtein($acc_answer[0][0], $acc_answer[0][2])==0 &&
+				levenshtein($acc_answer[1][0], $acc_answer[1][2])==0) ||
+				(levenshtein($acc_answer[0][1], $acc_answer[0][2])==0 &&
+				levenshtein($acc_answer[1][1], $acc_answer[1][2])==0)){
+				$ease_factor = 1.2;
+			}
+			
+			$cur_fitness = ($average_fit/$consistency) * $ease_factor;
+			
+			$best_fitness = ($cur_fitness > $best_fitness) ? $cur_fitness : $best_fitness;
 		
 			array_push($this->fitness, $cur_fitness);
+			
+			
+			//echo "Trial #1: Mturk answer: ".(string)$acc_answer[0][0].", Antigate answer: ".(string)$acc_answer[0][1].", Text:".(string)$acc_answer[0][2]."\n";
+			//echo "Trial #2: Mturk answer: ".(string)$acc_answer[1][0].", Antigate answer: ".(string)$acc_answer[1][1].", Text: ".(string)$acc_answer[1][2]."\n";
+			//echo "Ease factor is $ease_factor, average fit is $average_fit, consistency is $consistency, fit is $cur_fitness\n\n\n";
+			//
 		}
 		
+		$this->average_fit = array_sum($this->fitness)/ sizeof($this->fitness);
+		$this->max_fit = $best_fitness;
 		
 		//after fitness is calculated, we want to clean the table with user data
 		$query = "TRUNCATE $this->table"."_antigate";
