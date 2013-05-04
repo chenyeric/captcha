@@ -542,7 +542,15 @@ Class Population{
 				$ease_factor = 1.2;
 			}
 			
-			$cur_fitness = ($average_fit/$consistency) * $ease_factor;
+			$hard_factor = 1.0;
+			if (levenshtein($acc_answer[0][0], $acc_answer[0][2])>0 &&
+				levenshtein($acc_answer[1][0], $acc_answer[1][2])>0 &&
+				levenshtein($acc_answer[0][1], $acc_answer[0][2])>0 &&
+				levenshtein($acc_answer[1][1], $acc_answer[1][2])>0){
+				$hard_factor = 0.8;
+			}
+			
+			$cur_fitness = ($average_fit/$consistency) * $ease_factor * $hard_factor;
 			
 			$best_fitness = ($cur_fitness > $best_fitness) ? $cur_fitness : $best_fitness;
 		
@@ -551,8 +559,8 @@ Class Population{
 			
 			//echo "Trial #1: Mturk answer: ".(string)$acc_answer[0][0].", Antigate answer: ".(string)$acc_answer[0][1].", Text:".(string)$acc_answer[0][2]."\n";
 			//echo "Trial #2: Mturk answer: ".(string)$acc_answer[1][0].", Antigate answer: ".(string)$acc_answer[1][1].", Text: ".(string)$acc_answer[1][2]."\n";
-			//echo "Ease factor is $ease_factor, average fit is $average_fit, consistency is $consistency, fit is $cur_fitness\n\n\n";
-			//
+			//echo "Ease factor is $ease_factor, hard factor is $hard_factor, average fit is $average_fit, consistency is $consistency, fit is $cur_fitness\n\n\n";
+			
 		}
 		
 		$this->average_fit = array_sum($this->fitness)/ sizeof($this->fitness);
