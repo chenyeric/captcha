@@ -647,8 +647,8 @@ Class Population{
 		arsort($this->fitness);
 		
 		//after fitness is sorted, we want to weed out weaker offsprings
-		//$result = array_slice($this->fitness,0, $this->equil_size, true);
-		$result = array_slice($this->fitness,0, $this->mturk_multiple, true);
+		$result = array_slice($this->fitness,0, $this->equil_size, true);
+		//$result = array_slice($this->fitness,0, $this->mturk_multiple, true);
 		
 		//$result now contains the offsprings that needs to be removed
 		foreach($this->fitness as $key=>$value){

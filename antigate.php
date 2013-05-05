@@ -236,7 +236,7 @@ function recognize(
 //	shuffle($seed); // probably optional since array_is randomized; this may be redundant
 //	$rand = implode('', array_rand($seed, 5));
 //	return $rand;
-	
+//	
 	if (!file_exists($filename))
 	{
 		if ($is_verbose) echo "file $filename not found\n";
