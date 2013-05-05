@@ -168,7 +168,13 @@ function query($filename,
 		$is_russian = 0){
 	
 	//echo "query host $sendhost with id $captcha_id\n";
-	//return array("m t u r k",100);
+//	
+//	$seed = str_split('abcdefghijklmnopqrstuvwxyz'
+//                 .'ABCDEFGHIJKLMNOPQRSTUVWXYZ'); // and any other characters
+//	shuffle($seed); // probably optional since array_is randomized; this may be redundant
+//	$rand = implode('', array_rand($seed, 5));
+//
+//	return array(rand,100);
 
 	while(true)
 	{
@@ -225,7 +231,11 @@ function recognize(
 		$is_russian = 0)
 {
 	//echo "recognize host $sendhost, file: $filename\n";
-	//return " a n t i g a t e";
+//	$seed = str_split('abcdefghijklmnopqrstuvwxyz'
+//                 .'ABCDEFGHIJKLMNOPQRSTUVWXYZ'); // and any other characters
+//	shuffle($seed); // probably optional since array_is randomized; this may be redundant
+//	$rand = implode('', array_rand($seed, 5));
+//	return $rand;
 	
 	if (!file_exists($filename))
 	{

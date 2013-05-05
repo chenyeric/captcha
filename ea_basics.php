@@ -256,7 +256,7 @@ Class Population{
 		//create the elitist table to keep track of best performing individuals
 		mysql_connect("localhost",$this->username,$this->password);
 		@mysql_select_db($this->database) or die( "Unable to select database");
-		$query = "CREATE TABLE IF NOT EXISTS elitist(id MEDIUMINT NOT NULL AUTO_INCREMENT, PRIMARY KEY (id), geno BLOB, fitness int)";
+		$query = "CREATE TABLE IF NOT EXISTS elitist(id MEDIUMINT NOT NULL AUTO_INCREMENT, PRIMARY KEY (id), geno BLOB, fitness float)";
 		mysql_query($query);
 		mysql_close();
 		
@@ -379,8 +379,12 @@ Class Population{
 		}
 		
 		while (sizeof($this->offsprings) > $this->mturk_multiple){
-			unset($this->offsprings[rand(0,sizeof($this->offsprings)-1)]);
-			$this->offsprings = array_values($this->offsprings);
+			
+			//unset($this->offsprings[rand(0,sizeof($this->offsprings)-1)]);
+			//$this->offsprings = array_values($this->offsprings);
+			
+			$this->offsprings = array_slice($this->offsprings,0, $this->mturk_multiple, true);
+
 		}
 		
 		
@@ -543,11 +547,11 @@ Class Population{
 			}
 			
 			$hard_factor = 1.0;
-			if (levenshtein($acc_answer[0][0], $acc_answer[0][2])>0 &&
-				levenshtein($acc_answer[1][0], $acc_answer[1][2])>0 &&
-				levenshtein($acc_answer[0][1], $acc_answer[0][2])>0 &&
-				levenshtein($acc_answer[1][1], $acc_answer[1][2])>0){
-				$hard_factor = 0.8;
+			if ((levenshtein($acc_answer[0][0], $acc_answer[0][2])>0 &&
+				levenshtein($acc_answer[1][0], $acc_answer[1][2])>0) ||
+				(levenshtein($acc_answer[0][1], $acc_answer[0][2])>0 &&
+				levenshtein($acc_answer[1][1], $acc_answer[1][2])>0)){
+				$hard_factor = 0.6;
 			}
 			
 			$cur_fitness = ($average_fit/$consistency) * $ease_factor * $hard_factor;
@@ -643,7 +647,8 @@ Class Population{
 		arsort($this->fitness);
 		
 		//after fitness is sorted, we want to weed out weaker offsprings
-		$result = array_slice($this->fitness,0, $this->equil_size, true);
+		//$result = array_slice($this->fitness,0, $this->equil_size, true);
+		$result = array_slice($this->fitness,0, $this->mturk_multiple, true);
 		
 		//$result now contains the offsprings that needs to be removed
 		foreach($this->fitness as $key=>$value){
